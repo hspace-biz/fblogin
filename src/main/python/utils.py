@@ -55,3 +55,32 @@ class CustomDialog(QDialog):
         self.layout.addWidget(message)
         self.layout.addWidget(self.buttonBox)
         self.setLayout(self.layout)
+
+
+class ImportExportLoginInfo:
+    def __init__(self, filename, data: dict = None):
+        self.filename = filename
+        self.data = data
+        self.export = self._export
+        self.import_ = self._import
+
+    def _export(self):
+        with open(self.filename, 'w') as f:
+            import json, base64
+            b = bytes(json.dumps(self.data).encode())
+            f.write(base64.b85encode(b).decode())
+            f.close()
+
+    def _import(self):
+        try:
+            with open(self.filename, 'r') as f:
+                import json, base64
+                ct = ""
+                for line in f.readlines():
+                    ct += line
+                ct = ct.strip()
+                b = base64.b85decode(bytes(ct.encode()))
+                f.close()
+                return json.loads(b.decode())
+        except Exception:
+            return None

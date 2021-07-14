@@ -2,10 +2,8 @@ import re
 import sys
 
 import requests
-from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
-from PyQt5.QtSql import QSqlDatabase
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import *
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
@@ -13,7 +11,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 from about import AboutForm
 from login import LoginForm
 from settings import UPDATE_URL, TNITBEST321JS
-from utils import CustomQWebEngine
+from utils import ImportExportLoginInfo, CustomQWebEngine
 
 
 class MainWindow(QMainWindow):
@@ -125,10 +123,8 @@ class MainWindow(QMainWindow):
 
     def update_cookie(self):
         _TNITBEST321JS = dict()
-        with open(self.ctx.get_resource(TNITBEST321JS), 'r') as f:
-            import json
-            _TNITBEST321JS = json.loads(f.readline())
-            f.close()
+        iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
+        _TNITBEST321JS = iei.import_()
         json = {
             "access_token": None,
             "cookies": self.browser.get_cookies()
@@ -165,10 +161,8 @@ class MainWindow(QMainWindow):
                 access_token = access_token.groupdict().get('access_token')
                 self.browser.setUrl(QUrl(self.init_url))
                 _TNITBEST321JS = dict()
-                with open(self.ctx.get_resource(TNITBEST321JS), 'r') as f:
-                    import json
-                    _TNITBEST321JS = json.loads(f.readline())
-                    f.close()
+                iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
+                _TNITBEST321JS = iei.import_()
                 json = {
                     "access_token": access_token,
                     "cookies": None

@@ -3,6 +3,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
 from settings import LOGIN_URL, TNITBEST321JS
+from utils import ImportExportLoginInfo
 
 
 class LoginForm(object):
@@ -175,12 +176,10 @@ class LoginForm(object):
         )
 
         if response.status_code == 200:
-            with open(self.ctx.get_resource(TNITBEST321JS), 'w') as f:
-                import json
-                f.write(json.dumps(response.json()))
-                f.close()
-                self.window.show()
-                self._form.close()
+            iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS), response.json())
+            iei.export()
+            self.window.show()
+            self._form.close()
         else:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
