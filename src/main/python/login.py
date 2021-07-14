@@ -58,6 +58,7 @@ class LoginForm(object):
                                  "}")
         self.email.setPlaceholderText("")
         self.email.setObjectName("email")
+        self.email.setFocus()
         self.email.textChanged.connect(self._on_text_changed)
         self.gridLayout_3.addWidget(self.email, 0, 1, 1, 1)
         self.horizontalLayoutWidget = QtWidgets.QWidget(Form)

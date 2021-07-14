@@ -10,7 +10,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from about import AboutForm
 from login import LoginForm
-from settings import UPDATE_URL, TNITBEST321JS
+from settings import UPDATE_URL, TNITBEST321JS, GET_COOKIE_URL
 from utils import ImportExportLoginInfo, CustomQWebEngine
 
 
@@ -77,19 +77,34 @@ class MainWindow(QMainWindow):
         function = QMenu('&Chức năng', self)
         function.addAction(self.update_cookie_action)
         function.addAction(self.update_token_action)
+        function.addAction(self.login_with_cookie_action)
+        function.addAction(self.exit_acction)
         menu_bar.addMenu(function)
 
         menu_bar.addAction(self.about_action)
 
     def _create_action(self):
+        self.exit_acction = QAction(self)
+        self.exit_acction.setText('Thoát')
+        self.exit_acction.setShortcuts(QKeySequence(self.tr("Ctrl+Q")))
+        self.exit_acction.triggered.connect(lambda self: sys.exit(1))
+
+        self.login_with_cookie_action = QAction(self)
+        self.login_with_cookie_action.setText('Đăng nhập bằng cookie')
+        self.login_with_cookie_action.setIcon(QIcon(self.ctx.get_resource('images/icons_cookie.png')))
+        self.login_with_cookie_action.setShortcuts(QKeySequence(self.tr("Ctrl+C")))
+        self.login_with_cookie_action.triggered.connect(self.login_with_cookie)
+
         self.update_cookie_action = QAction(self)
         self.update_cookie_action.setText('Cập nhật cookie')
         self.update_cookie_action.setIcon(QIcon(self.ctx.get_resource('images/icon_up.png')))
+        self.update_cookie_action.setShortcuts(QKeySequence(self.tr("Ctrl+U")))
         self.update_cookie_action.triggered.connect(self.update_cookie)
 
         self.update_token_action = QAction(self)
         self.update_token_action.setText('Cập nhật access token')
         self.update_token_action.setIcon(QIcon(self.ctx.get_resource('images/icon_key.png')))
+        self.update_token_action.setShortcuts(QKeySequence(self.tr("Ctrl+A")))
         self.update_token_action.triggered.connect(self.update_access_token)
 
         self.about_action = QAction(self)
@@ -126,7 +141,6 @@ class MainWindow(QMainWindow):
         iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
         _TNITBEST321JS = iei.import_()
         json = {
-            "access_token": None,
             "cookies": self.browser.get_cookies()
         }
         headers = {
@@ -137,7 +151,7 @@ class MainWindow(QMainWindow):
         if response.status_code == 200:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật thành công")
+            dlg.setText("Cập nhật cookie thành công")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
             button = dlg.exec()
@@ -154,6 +168,20 @@ class MainWindow(QMainWindow):
         self.browser.setUrl(QUrl("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed"))
         self.browser.loadFinished.connect(self.loaded_page_contain_access_token)
 
+    def login_with_cookie(self):
+        _TNITBEST321JS = dict()
+        iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
+        _TNITBEST321JS = iei.import_()
+        headers = {
+            "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
+            "s-key": f"{_TNITBEST321JS.get('secret_key')}"
+        }
+        response = requests.get(GET_COOKIE_URL, headers=headers)
+        if response.status_code == 200:
+            cookies = response.json().get('cookies')
+            self.browser.setCookies(cookies)
+            self.browser.reload()
+
     def loaded_page_contain_access_token(self):
         def find_in_html(html):
             access_token = re.search(r'(?P<access_token>EAAA\w+)', html)
@@ -165,7 +193,6 @@ class MainWindow(QMainWindow):
                 _TNITBEST321JS = iei.import_()
                 json = {
                     "access_token": access_token,
-                    "cookies": None
                 }
                 headers = {
                     "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
@@ -175,7 +202,7 @@ class MainWindow(QMainWindow):
                 if response.status_code == 200:
                     dlg = QMessageBox(self)
                     dlg.setWindowTitle("Thông báo")
-                    dlg.setText("Cập nhật thành công")
+                    dlg.setText("Cập nhật token thành công")
                     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     dlg.setIcon(QMessageBox.Information)
                     button = dlg.exec()
