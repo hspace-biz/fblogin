@@ -1,8 +1,10 @@
 import re
 import sys
 
+from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.QtSql import QSqlDatabase
 from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import *
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
@@ -154,6 +156,9 @@ class MainWindow(QMainWindow):
         ui = AboutForm()
         ui.setupUi(self.about_window)
         self.about_window.show()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        QSqlDatabase.removeDatabase(QSqlDatabase.database().connectionName())
 
 
 if __name__ == '__main__':

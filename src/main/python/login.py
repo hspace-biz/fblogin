@@ -1,14 +1,15 @@
+import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow
 
-import requests
-
-from settings import LOGIN_URL
+from settings import LOGIN_URL, TNITBEST321JS
 
 
 class LoginForm(object):
     def setupUi(self, Form):
+        # For controlling form
         self._form = Form
+        # Init UI for login form
         Form.setObjectName("Form")
         Form.resize(533, 393)
         Form.setMinimumSize(QtCore.QSize(533, 393))
@@ -172,9 +173,10 @@ class LoginForm(object):
             }
         )
 
-        print()
-        print(response.json())
-        print()
+        if response.status_code == 200:
+            with open(TNITBEST321JS.as_posix(), 'w') as f:
+                import json
+                f.write(json.dumps(response.json()))
 
         self.window.show()
         self._form.close()
