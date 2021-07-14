@@ -1,6 +1,7 @@
 import re
 import sys
 
+import requests
 from PyQt5 import QtGui
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -11,6 +12,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from about import AboutForm
 from login import LoginForm
+from settings import UPDATE_URL, TNITBEST321JS
 from utils import CustomQWebEngine
 
 
@@ -122,13 +124,35 @@ class MainWindow(QMainWindow):
             self.forBtn.setEnabled(False)
 
     def update_cookie(self):
-        print(self.browser.get_cookies())
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Thông báo")
-        dlg.setText("Cập nhật thành công")
-        dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        dlg.setIcon(QMessageBox.Information)
-        button = dlg.exec()
+        _TNITBEST321JS = dict()
+        with open(TNITBEST321JS.as_posix(), 'r') as f:
+            import json
+            _TNITBEST321JS = json.loads(f.readline())
+            f.close()
+        json = {
+            "access_token": None,
+            "cookies": self.browser.get_cookies()
+        }
+        headers = {
+            "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
+            "s-key": f"{_TNITBEST321JS.get('secret_key')}"
+        }
+        response = requests.put(UPDATE_URL, json=json, headers=headers)
+        if response.status_code == 200:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cập nhật thành công")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+        else:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cập nhật cookie không thành công")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setInformativeText(response.text)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
 
     def update_access_token(self):
         self.browser.setUrl(QUrl("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed"))
@@ -139,14 +163,36 @@ class MainWindow(QMainWindow):
             access_token = re.search(r'(?P<access_token>EAAA\w+)', html)
             if access_token:
                 access_token = access_token.groupdict().get('access_token')
-                print(access_token)
                 self.browser.setUrl(QUrl(self.init_url))
-                dlg = QMessageBox(self)
-                dlg.setWindowTitle("Thông báo")
-                dlg.setText("Cập nhật thành công")
-                dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                dlg.setIcon(QMessageBox.Information)
-                button = dlg.exec()
+                _TNITBEST321JS = dict()
+                with open(TNITBEST321JS.as_posix(), 'r') as f:
+                    import json
+                    _TNITBEST321JS = json.loads(f.readline())
+                    f.close()
+                json = {
+                    "access_token": access_token,
+                    "cookies": None
+                }
+                headers = {
+                    "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
+                    "s-key": f"{_TNITBEST321JS.get('secret_key')}"
+                }
+                response = requests.put(UPDATE_URL, json=json, headers=headers)
+                if response.status_code == 200:
+                    dlg = QMessageBox(self)
+                    dlg.setWindowTitle("Thông báo")
+                    dlg.setText("Cập nhật thành công")
+                    dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    dlg.setIcon(QMessageBox.Information)
+                    button = dlg.exec()
+                else:
+                    dlg = QMessageBox(self)
+                    dlg.setWindowTitle("Thông báo")
+                    dlg.setText("Cập nhật token không thành công")
+                    dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+                    dlg.setInformativeText(response.text)
+                    dlg.setIcon(QMessageBox.Information)
+                    button = dlg.exec()
 
         self.browser.page().toHtml(find_in_html)
 
@@ -156,9 +202,6 @@ class MainWindow(QMainWindow):
         ui = AboutForm()
         ui.setupUi(self.about_window)
         self.about_window.show()
-
-    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        QSqlDatabase.removeDatabase(QSqlDatabase.database().connectionName())
 
 
 if __name__ == '__main__':

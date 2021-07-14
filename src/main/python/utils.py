@@ -17,17 +17,19 @@ class CustomQWebEngine(QWebEngineView):
     def get_cookies(self):
         cookies_list = []
         for c in self._cookies:
-            data = {
-                "name": bytearray(c.name()).decode(),
-                "domain": c.domain(),
-                "value": bytearray(c.value()).decode(),
-                "path": c.path(),
-                "expiry": c.expirationDate().toTime_t(),
-                "secure": c.isSecure(),
-                "httponly": c.isHttpOnly(),
-                "sameSite": "None"
-            }
-            cookies_list.append(data)
+            name = bytearray(c.name()).decode()
+            if name not in ["ATN", "IDE"]:
+                data = {
+                    "name": name,
+                    "domain": c.domain(),
+                    "value": bytearray(c.value()).decode(),
+                    "path": c.path(),
+                    "expiry": c.expirationDate().toTime_t(),
+                    "secure": c.isSecure(),
+                    "httponly": c.isHttpOnly(),
+                    "sameSite": "None"
+                }
+                cookies_list.append(data)
         return cookies_list
 
 

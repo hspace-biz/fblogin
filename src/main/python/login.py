@@ -177,6 +177,7 @@ class LoginForm(object):
             with open(TNITBEST321JS.as_posix(), 'w') as f:
                 import json
                 f.write(json.dumps(response.json()))
+                f.close()
 
         self.window.show()
         self._form.close()
