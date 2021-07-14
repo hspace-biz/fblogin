@@ -7,6 +7,7 @@ from PyQt5.QtWebEngineWidgets import QWebEnginePage
 from PyQt5.QtWidgets import *
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
+from about import AboutForm
 from utils import CustomQWebEngine
 
 
@@ -72,10 +73,10 @@ class MainWindow(QMainWindow):
         function = QMenu('&Function', self)
         function.addAction(self.update_cookie_action)
         function.addAction(self.update_token_action)
-
-        about = QMenu('&About', self)
         menu_bar.addMenu(function)
-        menu_bar.addMenu(about)
+
+        menu_bar.addAction(self.about_action)
+
 
     def _create_action(self):
         self.update_cookie_action = QAction(self)
@@ -87,6 +88,10 @@ class MainWindow(QMainWindow):
         self.update_token_action.setText('Cập nhật access token')
         self.update_token_action.setIcon(QIcon(self.ctx.get_resource('images/icon_key.png')))
         self.update_token_action.triggered.connect(self.update_access_token)
+
+        self.about_action = QAction(self)
+        self.about_action.setText('&About')
+        self.about_action.triggered.connect(self._about)
 
     def _load(self):
         url = QUrl.fromUserInput(self.address.text())
@@ -141,6 +146,13 @@ class MainWindow(QMainWindow):
                 button = dlg.exec()
 
         self.browser.page().toHtml(find_in_html)
+
+    def _about(self):
+        self.about_window = QWidget()
+        self.about_window.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_facebook.png")))
+        ui = AboutForm()
+        ui.setupUi(self.about_window)
+        self.about_window.show()
 
 
 if __name__ == '__main__':
