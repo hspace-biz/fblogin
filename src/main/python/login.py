@@ -6,9 +6,10 @@ from settings import LOGIN_URL, TNITBEST321JS
 
 
 class LoginForm(object):
-    def setupUi(self, Form):
+    def setupUi(self, Form, ctx):
         # For controlling form
         self._form = Form
+        self.ctx = ctx
         # Init UI for login form
         Form.setObjectName("Form")
         Form.resize(533, 393)
@@ -174,7 +175,7 @@ class LoginForm(object):
         )
 
         if response.status_code == 200:
-            with open(TNITBEST321JS, 'w') as f:
+            with open(self.ctx.get_resource(TNITBEST321JS), 'w') as f:
                 import json
                 f.write(json.dumps(response.json()))
                 f.close()

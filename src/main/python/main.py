@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
 
     def update_cookie(self):
         _TNITBEST321JS = dict()
-        with open(TNITBEST321JS, 'r') as f:
+        with open(self.ctx.get_resource(TNITBEST321JS), 'r') as f:
             import json
             _TNITBEST321JS = json.loads(f.readline())
             f.close()
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
                 access_token = access_token.groupdict().get('access_token')
                 self.browser.setUrl(QUrl(self.init_url))
                 _TNITBEST321JS = dict()
-                with open(TNITBEST321JS, 'r') as f:
+                with open(self.ctx.get_resource(TNITBEST321JS), 'r') as f:
                     import json
                     _TNITBEST321JS = json.loads(f.readline())
                     f.close()
@@ -210,7 +210,7 @@ if __name__ == '__main__':
     login_form = QWidget()
     login_form.setWindowIcon(QIcon(appctxt.get_resource("images/icon_facebook.png")))
     ui = LoginForm()
-    ui.setupUi(login_form)
+    ui.setupUi(login_form, ctx=appctxt)
     ui.setUpAfterLogin(MainWindow(init_url='https://www.facebook.com', ctx=appctxt))
     login_form.show()
 
