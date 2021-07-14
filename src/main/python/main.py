@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import *
 from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from about import AboutForm
+from login import LoginForm
 from utils import CustomQWebEngine
 
 
@@ -44,6 +45,7 @@ class MainWindow(QMainWindow):
         self.address.returnPressed.connect(self._load)
         self.address.setText(self.init_url)
         self.toolBar.addWidget(self.address)
+        self.setFocus()
 
         # Add web engine view
         self.browser = CustomQWebEngine()
@@ -70,13 +72,12 @@ class MainWindow(QMainWindow):
         menu_bar = QMenuBar(self)
         self.setMenuBar(menu_bar)
 
-        function = QMenu('&Function', self)
+        function = QMenu('&Chức năng', self)
         function.addAction(self.update_cookie_action)
         function.addAction(self.update_token_action)
         menu_bar.addMenu(function)
 
         menu_bar.addAction(self.about_action)
-
 
     def _create_action(self):
         self.update_cookie_action = QAction(self)
@@ -90,7 +91,7 @@ class MainWindow(QMainWindow):
         self.update_token_action.triggered.connect(self.update_access_token)
 
         self.about_action = QAction(self)
-        self.about_action.setText('&About')
+        self.about_action.setText('&Giới thiệu')
         self.about_action.triggered.connect(self._about)
 
     def _load(self):
@@ -157,6 +158,12 @@ class MainWindow(QMainWindow):
 
 if __name__ == '__main__':
     appctxt = ApplicationContext()
-    window = MainWindow(init_url='https://www.facebook.com', ctx=appctxt)
-    window.show()
+
+    login_form = QWidget()
+    login_form.setWindowIcon(QIcon(appctxt.get_resource("images/icon_facebook.png")))
+    ui = LoginForm()
+    ui.setupUi(login_form)
+    ui.setUpAfterLogin(MainWindow(init_url='https://www.facebook.com', ctx=appctxt))
+    login_form.show()
+
     sys.exit(appctxt.app.exec_())

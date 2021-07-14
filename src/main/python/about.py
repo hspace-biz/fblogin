@@ -27,7 +27,7 @@ class AboutForm(object):
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
-        Form.setWindowTitle(_translate("Form", "About"))
+        Form.setWindowTitle(_translate("Form", "Giới thiệu"))
         self.pushButton.setText(_translate("Form", "PushButton"))
         self.textEdit.setHtml(_translate("Form",
                                          "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.0//EN\" \"http://www.w3.org/TR/REC-html40/strict.dtd\">\n"
