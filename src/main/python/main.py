@@ -125,7 +125,7 @@ class MainWindow(QMainWindow):
 
     def update_cookie(self):
         _TNITBEST321JS = dict()
-        with open(TNITBEST321JS.as_posix(), 'r') as f:
+        with open(TNITBEST321JS, 'r') as f:
             import json
             _TNITBEST321JS = json.loads(f.readline())
             f.close()
@@ -165,7 +165,7 @@ class MainWindow(QMainWindow):
                 access_token = access_token.groupdict().get('access_token')
                 self.browser.setUrl(QUrl(self.init_url))
                 _TNITBEST321JS = dict()
-                with open(TNITBEST321JS.as_posix(), 'r') as f:
+                with open(TNITBEST321JS, 'r') as f:
                     import json
                     _TNITBEST321JS = json.loads(f.readline())
                     f.close()

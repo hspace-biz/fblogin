@@ -1,6 +1,6 @@
 import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
 from settings import LOGIN_URL, TNITBEST321JS
 
@@ -174,10 +174,17 @@ class LoginForm(object):
         )
 
         if response.status_code == 200:
-            with open(TNITBEST321JS.as_posix(), 'w') as f:
+            with open(TNITBEST321JS, 'w') as f:
                 import json
                 f.write(json.dumps(response.json()))
                 f.close()
-
-        self.window.show()
-        self._form.close()
+                self.window.show()
+                self._form.close()
+        else:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Kiểm tra lại thông tin đăng nhập!")
+            msg.setInformativeText("Email/mật khẩu không tồn tại trên hệ thống")
+            msg.setWindowTitle("Đăng nhập")
+            msg.setDetailedText(f"{response.text}")
+            msg.exec_()
