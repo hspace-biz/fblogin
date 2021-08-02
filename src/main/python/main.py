@@ -147,22 +147,25 @@ class MainWindow(QMainWindow):
             "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
             "s-key": f"{_TNITBEST321JS.get('secret_key')}"
         }
-        response = requests.put(UPDATE_URL, json=json, headers=headers)
-        if response.status_code == 200:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật cookie thành công")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setIcon(QMessageBox.Information)
-            button = dlg.exec()
-        else:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật cookie không thành công")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setInformativeText(response.text)
-            dlg.setIcon(QMessageBox.Information)
-            button = dlg.exec()
+        print()
+        print(json)
+        print()
+        # response = requests.put(UPDATE_URL, json=json, headers=headers)
+        # if response.status_code == 200:
+        #     dlg = QMessageBox(self)
+        #     dlg.setWindowTitle("Thông báo")
+        #     dlg.setText("Cập nhật cookie thành công")
+        #     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        #     dlg.setIcon(QMessageBox.Information)
+        #     button = dlg.exec()
+        # else:
+        #     dlg = QMessageBox(self)
+        #     dlg.setWindowTitle("Thông báo")
+        #     dlg.setText("Cập nhật cookie không thành công")
+        #     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        #     dlg.setInformativeText(response.text)
+        #     dlg.setIcon(QMessageBox.Information)
+        #     button = dlg.exec()
 
     def update_access_token(self):
         self.browser.setUrl(QUrl("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed"))

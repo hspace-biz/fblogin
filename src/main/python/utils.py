@@ -15,8 +15,11 @@ class CustomQWebEngine(QWebEngineView):
 
     def onCookieAdd(self, cookie):
         # Just receive cookie from facebook
+        c = QNetworkCookie(cookie)
         if re.search(r'facebook.com', QNetworkCookie(cookie).domain()):
-            self._cookies.append(QNetworkCookie(cookie))
+            name = bytearray(c.name()).decode()
+            if name not in ["ATN", "IDE", '_js_datr', 'checkpoint']:
+                self._cookies.append(QNetworkCookie(cookie))
 
     def setCookies(self, cookies):
         if cookies and isinstance(cookies, list):
@@ -43,17 +46,17 @@ class CustomQWebEngine(QWebEngineView):
             # Find max expiry time for each cookie key
             max_per_name = dict()
             for c_key in names:
-                max_per_name[f'{c_key}'] = 0
+                max_per_name[f'{c_key}'] = 0.0
             for c_key in names:
                 for c in self._cookies:
-                    exp = c.expirationDate().toTime_t()
+                    exp = c.expirationDate().toPyDateTime().timestamp()
                     name = bytearray(c.name()).decode()
                     if c_key == name:
                         if max_per_name[f'{c_key}'] < exp:
                             max_per_name[f'{c_key}'] = exp
             # Keep cookie keys with max one
             for c in self._cookies:
-                exp = c.expirationDate().toTime_t()
+                exp = c.expirationDate().toPyDateTime().timestamp()
                 name = bytearray(c.name()).decode()
                 if max_per_name[f'{name}'] == exp and name not in added:
                     clean_cookies.append(c)
@@ -67,18 +70,17 @@ class CustomQWebEngine(QWebEngineView):
         cookies_list = []
         for c in self._cookies:
             name = bytearray(c.name()).decode()
-            if name not in ["ATN", "IDE"]:
-                data = {
-                    "name": name,
-                    "domain": c.domain(),
-                    "value": bytearray(c.value()).decode(),
-                    "path": c.path(),
-                    "expiry": c.expirationDate().toTime_t(),
-                    "secure": c.isSecure(),
-                    "httpOnly": c.isHttpOnly(),
-                    "sameSite": "None"
-                }
-                cookies_list.append(data)
+            data = {
+                "name": name,
+                "domain": c.domain(),
+                "value": bytearray(c.value()).decode(),
+                "path": c.path(),
+                "expiry": c.expirationDate().toPyDateTime().timestamp(),
+                "secure": c.isSecure(),
+                "httpOnly": c.isHttpOnly(),
+                "sameSite": "None" if name != 'wd' else 'Lax'
+            }
+            cookies_list.append(data)
         return cookies_list
 
 
