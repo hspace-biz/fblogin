@@ -1,4 +1,7 @@
+import datetime
 import re
+from typing import List
+
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtNetwork import QNetworkCookie
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
@@ -11,15 +14,33 @@ class CustomQWebEngine(QWebEngineView):
         super(CustomQWebEngine, self).__init__(*args, **kwargs)
         QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies)
         QWebEngineProfile.defaultProfile().cookieStore().cookieAdded.connect(self.onCookieAdd)
+        QWebEngineProfile.defaultProfile().setHttpUserAgent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.122 Safari/537.36")
         self._cookies = []
 
     def onCookieAdd(self, cookie):
         # Just receive cookie from facebook
         c = QNetworkCookie(cookie)
-        if re.search(r'facebook.com', QNetworkCookie(cookie).domain()):
+        fr_cookie_name_timestamp = None
+        if re.search(r'facebook.com', c.domain()):
             name = bytearray(c.name()).decode()
             if name not in ["ATN", "IDE", '_js_datr', 'checkpoint']:
-                self._cookies.append(QNetworkCookie(cookie))
+                self._cookies.append(c)
+            if name == 'fr':
+                fr_cookie_name_timestamp = c.expirationDate().toPyDateTime().timestamp()
+                x = datetime.timedelta(days=82, seconds=86341, microseconds=72000)
+                wd_expiry = fr_cookie_name_timestamp - x.total_seconds()
+                # Create wd cookie
+                wd_cookie = QNetworkCookie()
+                wd_cookie.setName(bytes('wd'.encode()))
+                wd_cookie.setPath('/')
+                wd_cookie.setValue(bytes('1076x736'.encode()))
+                wd_cookie.setDomain('.facebook.com')
+                wd_cookie.setExpirationDate(datetime.datetime.fromtimestamp(wd_expiry))
+                wd_cookie.setHttpOnly(False)
+                wd_cookie.setSecure(True)
+                wd_cookie.__setattr__("sameSite", "Lax")
+                self._cookies.append(wd_cookie)
 
     def setCookies(self, cookies):
         if cookies and isinstance(cookies, list):
@@ -65,22 +86,29 @@ class CustomQWebEngine(QWebEngineView):
         except KeyError:
             pass
 
-    def get_cookies(self):
+    def get_cookies(self, except_cookies_name: List[str] = None):
+        """Get cookies
+        Args:
+            except_cookies_name (list(str)): list of string cookie name not want to get
+        Returns:
+            List of cookies
+        """
         self.clean_cookies()
         cookies_list = []
         for c in self._cookies:
             name = bytearray(c.name()).decode()
-            data = {
-                "name": name,
-                "domain": c.domain(),
-                "value": bytearray(c.value()).decode(),
-                "path": c.path(),
-                "expiry": c.expirationDate().toPyDateTime().timestamp(),
-                "secure": c.isSecure(),
-                "httpOnly": c.isHttpOnly(),
-                "sameSite": "None" if name != 'wd' else 'Lax'
-            }
-            cookies_list.append(data)
+            if except_cookies_name and name not in except_cookies_name:
+                data = {
+                    "name": name,
+                    "domain": c.domain(),
+                    "value": bytearray(c.value()).decode(),
+                    "path": c.path(),
+                    "expiry": c.expirationDate().toPyDateTime().timestamp(),
+                    "secure": c.isSecure(),
+                    "httpOnly": c.isHttpOnly(),
+                    "sameSite": "None" if name != 'wd' else 'Lax'
+                }
+                cookies_list.append(data)
         return cookies_list
 
 

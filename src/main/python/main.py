@@ -1,3 +1,5 @@
+import datetime
+import json
 import re
 import sys
 
@@ -140,14 +142,46 @@ class MainWindow(QMainWindow):
         _TNITBEST321JS = dict()
         iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
         _TNITBEST321JS = iei.import_()
-        json = {
-            "cookies": self.browser.get_cookies()
-        }
         headers = {
             "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
             "s-key": f"{_TNITBEST321JS.get('secret_key')}"
         }
-        response = requests.put(UPDATE_URL, json=json, headers=headers)
+        # Get cookie on server first and keep sb, datr cookie if exist and not expired
+        # It's took 2 years to expired datr, sb key name cookie
+        response = requests.get(GET_COOKIE_URL, headers=headers)
+        current_sb_datr = []
+        if response.status_code == 200:
+            cookies = response.json().get('cookies')
+            for _cookie in cookies:
+                name = _cookie.get('name')
+                expiry = _cookie.get('expiry')
+                if (name and name in ['sb', 'datr']) and expiry > datetime.datetime.now().timestamp():
+                    current_sb_datr.append(_cookie)
+
+        if len(current_sb_datr) == 2:
+            current_cookies = self.browser.get_cookies(except_cookies_name=['sb', 'datr'])
+            current_cookies.extend(current_sb_datr)
+        else:
+            current_cookies = self.browser.get_cookies()
+        response = requests.put(UPDATE_URL, json={'cookies': current_cookies}, headers=headers)
+
+        # CHeck if user logged in or not
+        is_logged_in = False
+        for _cookie in current_cookies:
+            name = _cookie.get('name')
+            if not is_logged_in and name == "xs":
+                is_logged_in = True
+                break
+
+        if not is_logged_in:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Đăng nhập trước khi cập nhật cookie!")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+            return False
+
         if response.status_code == 200:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
@@ -165,6 +199,23 @@ class MainWindow(QMainWindow):
             button = dlg.exec()
 
     def update_access_token(self):
+        # CHeck if user logged in or not
+        is_logged_in = False
+        for _cookie in self.browser.get_cookies():
+            name = _cookie.get('name')
+            if not is_logged_in and name == "xs":
+                is_logged_in = True
+                break
+
+        if not is_logged_in:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Đăng nhập trước khi cập nhật access token!")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+            return False
+
         self.browser.setUrl(QUrl("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed"))
         self.browser.loadFinished.connect(self.loaded_page_contain_access_token)
 
@@ -232,7 +283,7 @@ if __name__ == '__main__':
     login_form.setWindowIcon(QIcon(appctxt.get_resource("images/icon_facebook.png")))
     ui = LoginForm()
     ui.setupUi(login_form, ctx=appctxt)
-    ui.setUpAfterLogin(MainWindow(init_url='https://www.facebook.com', ctx=appctxt))
+    ui.setUpAfterLogin(MainWindow(init_url='https://www.facebook.com/', ctx=appctxt))
     login_form.show()
 
     sys.exit(appctxt.app.exec_())
