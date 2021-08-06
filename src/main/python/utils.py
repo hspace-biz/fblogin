@@ -5,7 +5,7 @@ from typing import List
 from PyQt5.QtCore import QDateTime
 from PyQt5.QtNetwork import QNetworkCookie
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
-from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
 
 
 class CustomQWebEngine(QWebEngineView):
@@ -15,48 +15,60 @@ class CustomQWebEngine(QWebEngineView):
         QWebEngineProfile.defaultProfile().setPersistentCookiesPolicy(QWebEngineProfile.NoPersistentCookies)
         QWebEngineProfile.defaultProfile().cookieStore().cookieAdded.connect(self.onCookieAdd)
         QWebEngineProfile.defaultProfile().setHttpUserAgent(
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.122 Safari/537.36")
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/56.0.2924.122 Safari/537.36"
+        )
         self._cookies = []
 
     def onCookieAdd(self, cookie):
         # Just receive cookie from facebook
         c = QNetworkCookie(cookie)
-        fr_cookie_name_timestamp = None
+        print("cookie added")
+        print(self.get_cookies())
+        print("="*80)
         if re.search(r'facebook.com', c.domain()):
             name = bytearray(c.name()).decode()
             if name not in ["ATN", "IDE", '_js_datr', 'checkpoint']:
                 self._cookies.append(c)
-            if name == 'fr':
-                fr_cookie_name_timestamp = c.expirationDate().toPyDateTime().timestamp()
-                x = datetime.timedelta(days=82, seconds=86341, microseconds=72000)
-                wd_expiry = fr_cookie_name_timestamp - x.total_seconds()
-                # Create wd cookie
-                wd_cookie = QNetworkCookie()
-                wd_cookie.setName(bytes('wd'.encode()))
-                wd_cookie.setPath('/')
-                wd_cookie.setValue(bytes('1076x736'.encode()))
-                wd_cookie.setDomain('.facebook.com')
-                wd_cookie.setExpirationDate(datetime.datetime.fromtimestamp(wd_expiry))
-                wd_cookie.setHttpOnly(False)
-                wd_cookie.setSecure(True)
-                wd_cookie.__setattr__("sameSite", "Lax")
-                self._cookies.append(wd_cookie)
+                if name == 'fr':
+                    fr_cookie_name_timestamp = c.expirationDate().toPyDateTime().timestamp()
+                    x = datetime.timedelta(days=82, seconds=86341, microseconds=72000)
+                    wd_expiry = fr_cookie_name_timestamp - x.total_seconds()
+                    # Create wd cookie
+                    wd_cookie = QNetworkCookie()
+                    wd_cookie.setName(bytes('wd'.encode()))
+                    wd_cookie.setPath('/')
+                    wd_cookie.setValue(bytes('1076x736'.encode()))
+                    wd_cookie.setDomain('.facebook.com')
+                    wd_cookie.setExpirationDate(datetime.datetime.fromtimestamp(wd_expiry))
+                    wd_cookie.setHttpOnly(False)
+                    wd_cookie.setSecure(True)
+                    wd_cookie.__setattr__("sameSite", "Lax")
+                    self._cookies.append(wd_cookie)
 
     def setCookies(self, cookies):
-        if cookies and isinstance(cookies, list):
-            for cookie in cookies:
-                qnet_cookie = QNetworkCookie()
-                qnet_cookie.setName(bytes(cookie.get('name').encode()))
-                qnet_cookie.setDomain(cookie.get('domain'))
-                qnet_cookie.setValue(bytes(cookie.get('value').encode()))
-                qnet_cookie.setPath(cookie.get('path'))
-                expiration_date = QDateTime.fromTime_t(cookie.get('expiry'))
-                qnet_cookie.setExpirationDate(expiration_date)
-                qnet_cookie.setSecure(cookie.get('secure'))
-                qnet_cookie.setHttpOnly(cookie.get('httpOnly'))
-                QWebEngineProfile.defaultProfile().cookieStore().setCookie(QNetworkCookie(qnet_cookie))
+        try:
+            if cookies and isinstance(cookies, list):
+                for cookie in cookies:
+                    qnet_cookie = QNetworkCookie()
+                    qnet_cookie.setName(bytes(cookie.get('name').encode()))
+                    qnet_cookie.setDomain(cookie.get('domain'))
+                    qnet_cookie.setValue(bytes(cookie.get('value').encode()))
+                    qnet_cookie.setPath(cookie.get('path'))
+                    expiration_date = QDateTime.fromTime_t(cookie.get('expiry'))
+                    qnet_cookie.setExpirationDate(expiration_date)
+                    qnet_cookie.setSecure(cookie.get('secure'))
+                    qnet_cookie.setHttpOnly(cookie.get('httpOnly'))
+                    QWebEngineProfile.defaultProfile().cookieStore().setCookie(QNetworkCookie(qnet_cookie))
+        except Exception:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cookie không hợp lệ!")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
 
     def clean_cookies(self):
+        print("*"*80)
         clean_cookies, added = [], []
         try:
             # Create list of cookie keys
@@ -64,6 +76,7 @@ class CustomQWebEngine(QWebEngineView):
             for c in self._cookies:
                 name = bytearray(c.name()).decode()
                 names.add(name)
+            print(names)
             # Find max expiry time for each cookie key
             max_per_name = dict()
             for c_key in names:
@@ -75,6 +88,9 @@ class CustomQWebEngine(QWebEngineView):
                     if c_key == name:
                         if max_per_name[f'{c_key}'] < exp:
                             max_per_name[f'{c_key}'] = exp
+                        else:
+                            max_per_name[f'{c_key}'] = exp
+            print(max_per_name)
             # Keep cookie keys with max one
             for c in self._cookies:
                 exp = c.expirationDate().toPyDateTime().timestamp()
@@ -82,9 +98,9 @@ class CustomQWebEngine(QWebEngineView):
                 if max_per_name[f'{name}'] == exp and name not in added:
                     clean_cookies.append(c)
                     added.append(name)
-            self._cookies = clean_cookies
         except KeyError:
             pass
+        return clean_cookies
 
     def get_cookies(self, except_cookies_name: List[str] = None):
         """Get cookies
@@ -93,21 +109,23 @@ class CustomQWebEngine(QWebEngineView):
         Returns:
             List of cookies
         """
-        self.clean_cookies()
         cookies_list = []
-        for c in self._cookies:
+        clean_cookies = self.clean_cookies()
+        for c in clean_cookies:
             name = bytearray(c.name()).decode()
-            if except_cookies_name and name not in except_cookies_name:
-                data = {
-                    "name": name,
-                    "domain": c.domain(),
-                    "value": bytearray(c.value()).decode(),
-                    "path": c.path(),
-                    "expiry": c.expirationDate().toPyDateTime().timestamp(),
-                    "secure": c.isSecure(),
-                    "httpOnly": c.isHttpOnly(),
-                    "sameSite": "None" if name != 'wd' else 'Lax'
-                }
+            data = {
+                "name": name,
+                "domain": c.domain(),
+                "value": bytearray(c.value()).decode(),
+                "path": c.path(),
+                "expiry": c.expirationDate().toPyDateTime().timestamp(),
+                "secure": c.isSecure(),
+                "httpOnly": c.isHttpOnly(),
+                "sameSite": "None" if name != 'wd' else 'Lax'
+            }
+            if except_cookies_name is None:
+                cookies_list.append(data)
+            elif name not in except_cookies_name:
                 cookies_list.append(data)
         return cookies_list
 

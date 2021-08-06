@@ -52,11 +52,7 @@ class MainWindow(QMainWindow):
         self.setFocus()
 
         # Add web engine view
-        self.browser = CustomQWebEngine()
-        self.browser.setUrl(QUrl(self.init_url))
-        self.browser.page().urlChanged.connect(self._on_load_finished)
-        self.browser.page().titleChanged.connect(self.setWindowTitle)
-        self.browser.page().urlChanged.connect(self._url_changed)
+        self._init_new_browser(self.init_url)
 
         # Setting window
         self.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_facebook.png")))
@@ -71,6 +67,15 @@ class MainWindow(QMainWindow):
         self.addToolBar(Qt.TopToolBarArea, self.toolBar)
         self._create_action()
         self._create_menu_bar()
+
+    def _init_new_browser(self, url):
+        if hasattr(self, 'browser'):
+            del self.browser
+        self.browser = CustomQWebEngine()
+        self.browser.setUrl(QUrl(url))
+        self.browser.page().urlChanged.connect(self._on_load_finished)
+        self.browser.page().titleChanged.connect(self.setWindowTitle)
+        self.browser.page().urlChanged.connect(self._url_changed)
 
     def _create_menu_bar(self):
         menu_bar = QMenuBar(self)
@@ -153,17 +158,18 @@ class MainWindow(QMainWindow):
         if response.status_code == 200:
             cookies = response.json().get('cookies')
             for _cookie in cookies:
-                name = _cookie.get('name')
-                expiry = _cookie.get('expiry')
-                if (name and name in ['sb', 'datr']) and expiry > datetime.datetime.now().timestamp():
-                    current_sb_datr.append(_cookie)
+                if isinstance(_cookie, dict):
+                    name = _cookie.get('name')
+                    expiry = _cookie.get('expiry')
+                    if (name and (name in ['sb', 'datr'])) and (expiry > datetime.datetime.now().timestamp()):
+                        current_sb_datr.append(_cookie)
 
         if len(current_sb_datr) == 2:
             current_cookies = self.browser.get_cookies(except_cookies_name=['sb', 'datr'])
             current_cookies.extend(current_sb_datr)
         else:
             current_cookies = self.browser.get_cookies()
-        response = requests.put(UPDATE_URL, json={'cookies': current_cookies}, headers=headers)
+
 
         # CHeck if user logged in or not
         is_logged_in = False
@@ -181,6 +187,8 @@ class MainWindow(QMainWindow):
             dlg.setIcon(QMessageBox.Information)
             button = dlg.exec()
             return False
+
+        response = requests.put(UPDATE_URL, json={'cookies': current_cookies}, headers=headers)
 
         if response.status_code == 200:
             dlg = QMessageBox(self)
