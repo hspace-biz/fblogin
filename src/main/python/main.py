@@ -55,7 +55,7 @@ class MainWindow(QMainWindow):
         self._init_new_browser(self.init_url)
 
         # Setting window
-        self.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_facebook.png")))
+        self.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_sync.png")))
         self.resize(QSize(800, 700))
         qtRectangle = self.frameGeometry()
         centerPoint = QDesktopWidget().availableGeometry().center()
@@ -281,7 +281,7 @@ class MainWindow(QMainWindow):
 
     def _about(self):
         self.about_window = QWidget()
-        self.about_window.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_facebook.png")))
+        self.about_window.setWindowIcon(QIcon(self.ctx.get_resource("images/icon_sync.png")))
         ui = AboutForm()
         ui.setupUi(self.about_window)
         self.about_window.show()
@@ -291,7 +291,7 @@ if __name__ == '__main__':
     appctxt = ApplicationContext()
 
     login_form = QWidget()
-    login_form.setWindowIcon(QIcon(appctxt.get_resource("images/icon_facebook.png")))
+    login_form.setWindowIcon(QIcon(appctxt.get_resource("images/icon_sync.png")))
     ui = LoginForm()
     ui.setupUi(login_form, ctx=appctxt)
     ui.setUpAfterLogin(MainWindow(init_url='https://www.facebook.com/', ctx=appctxt))

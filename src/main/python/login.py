@@ -187,7 +187,6 @@ class LoginForm(object):
     def _on_text_changed(self):
         global BASE_URL
         BASE_URL = self.crawlerUrl.text()
-        self.login_btn.setEnabled(bool(self.email.text()) and bool(self.password.text()) and bool(BASE_URL))
 
     def _login(self):
         if not BASE_URL:
