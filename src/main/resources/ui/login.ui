@@ -62,14 +62,14 @@ p, li { white-space: pre-wrap; }
   <widget class="QWidget" name="gridLayoutWidget">
    <property name="geometry">
     <rect>
-     <x>80</x>
-     <y>80</y>
-     <width>371</width>
-     <height>171</height>
+     <x>10</x>
+     <y>90</y>
+     <width>511</width>
+     <height>291</height>
     </rect>
    </property>
    <layout class="QGridLayout" name="gridLayout_3">
-    <item row="4" column="1">
+    <item row="6" column="1">
      <widget class="QLineEdit" name="password">
       <property name="styleSheet">
        <string notr="true">QLineEdit {
@@ -78,6 +78,10 @@ p, li { white-space: pre-wrap; }
     padding: 8px;
     background: white;
     selection-background-color: darkgray;
+}
+
+QLineEdit:focus {
+    border: 1px solid #00aa7f;
 }</string>
       </property>
       <property name="inputMask">
@@ -86,23 +90,19 @@ p, li { white-space: pre-wrap; }
       <property name="echoMode">
        <enum>QLineEdit::Password</enum>
       </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600; text-decoration: underline;&quot;&gt;Mật khẩu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <property name="placeholderText">
+       <string>Nhập mật khẩu đăng nhập hệ thống</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="0">
+    <item row="1" column="0">
      <widget class="QLabel" name="label_2">
       <property name="text">
-       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600; text-decoration: underline;&quot;&gt;Email&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600; color:#00aa7f;&quot;&gt;Email&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
       </property>
      </widget>
     </item>
-    <item row="0" column="1">
+    <item row="1" column="1">
      <widget class="QLineEdit" name="email">
       <property name="styleSheet">
        <string notr="true">QLineEdit {
@@ -111,74 +111,52 @@ p, li { white-space: pre-wrap; }
     padding: 8px;
     background: white;
     selection-background-color: darkgray;
+}
+
+QLineEdit:focus {
+    border: 1px solid #00aa7f;
 }</string>
       </property>
       <property name="placeholderText">
-       <string/>
+       <string>Nhập địa chỉ email tài khoản hệ thống</string>
       </property>
      </widget>
     </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget">
-   <property name="geometry">
-    <rect>
-     <x>370</x>
-     <y>330</y>
-     <width>161</width>
-     <height>61</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout">
-    <item alignment="Qt::AlignHCenter">
-     <widget class="QPushButton" name="login_btn">
+    <item row="6" column="0">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600; color:#00aa7f;&quot;&gt;Mật khẩu&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="1">
+     <widget class="QLineEdit" name="crawlerUrl">
       <property name="styleSheet">
-       <string notr="true">QPushButton {
-    border: 1px solid #8f8f91;
-    border-radius: 2px;
-	background-color: qlineargradient(spread:pad, x1:0.557, y1:0.414682, x2:0, y2:0, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));
-    min-width: 80px;
-    padding: 13px;
-    color: white;
+       <string notr="true">QLineEdit {
+    border: 1px solid gray;
+    border-radius: 3px;
+    padding: 8px;
+    background: white;
+    selection-background-color: darkgray;
 }
 
-QPushButton:pressed {
-    color: qlineargradient(spread:pad, x1:0.557, y1:0.414682, x2:0, y2:0, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));
-	background-color: qlineargradient(spread:pad, x1:0.317864, y1:0.352, x2:1, y2:1, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));
-}
-
-QPushButton:flat {
-    border: none; /* no border for a flat push button */
-}
-
-QPushButton:default {
-    border-color: navy; /* make the default button prominent */
+QLineEdit:focus {
+    border: 1px solid #00aa7f;
 }</string>
       </property>
-      <property name="text">
-       <string>Đăng nhập</string>
-      </property>
-      <property name="default">
-       <bool>true</bool>
-      </property>
-      <property name="flat">
-       <bool>true</bool>
+      <property name="placeholderText">
+       <string>Nhập địa chỉ url điều khiển crawler</string>
       </property>
      </widget>
     </item>
-   </layout>
-  </widget>
-  <widget class="QWidget" name="horizontalLayoutWidget_2">
-   <property name="geometry">
-    <rect>
-     <x>80</x>
-     <y>250</y>
-     <width>371</width>
-     <height>41</height>
-    </rect>
-   </property>
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
-    <item alignment="Qt::AlignLeft">
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_3">
+      <property name="text">
+       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-size:11pt; font-weight:600; color:#00aa7f;&quot;&gt;CrawlerURL&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
      <widget class="QCommandLinkButton" name="forgot_pwd_btn">
       <property name="font">
        <font>
@@ -226,9 +204,60 @@ QPushButton:default {
       </property>
      </widget>
     </item>
+    <item row="7" column="1">
+     <widget class="QPushButton" name="login_btn">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">QPushButton {
+    border: 1px solid #00aa7f;
+    border-radius: 2px;
+	background-color:#00aa7f;
+    min-width: 80px;
+    padding: 13px;
+    color: white;
+}
+
+QPushButton:pressed {
+    color: #00aa7f;
+	background-color: #ffffff;
+}
+
+QPushButton:hover {
+    color: #00aa7f;
+	background-color: #ffffff;
+    border: 1px solid #00aa7f;
+}
+
+QPushButton:default {
+    border-color: #00aa7f; /* make the default button prominent */
+}</string>
+      </property>
+      <property name="text">
+       <string>Đăng nhập &gt;</string>
+      </property>
+      <property name="default">
+       <bool>true</bool>
+      </property>
+      <property name="flat">
+       <bool>true</bool>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
  </widget>
+ <tabstops>
+  <tabstop>crawlerUrl</tabstop>
+  <tabstop>email</tabstop>
+  <tabstop>password</tabstop>
+  <tabstop>login_btn</tabstop>
+  <tabstop>textEdit</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

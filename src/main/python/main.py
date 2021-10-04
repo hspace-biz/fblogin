@@ -12,7 +12,7 @@ from fbs_runtime.application_context.PyQt5 import ApplicationContext
 
 from about import AboutForm
 from login import LoginForm
-from settings import UPDATE_URL, TNITBEST321JS, GET_COOKIE_URL
+from settings import TNITBEST321JS
 from utils import ImportExportLoginInfo, CustomQWebEngine
 
 
@@ -153,7 +153,8 @@ class MainWindow(QMainWindow):
         }
         # Get cookie on server first and keep sb, datr cookie if exist and not expired
         # It's took 2 years to expired datr, sb key name cookie
-        response = requests.get(GET_COOKIE_URL, headers=headers)
+        BASE_URL = _TNITBEST321JS.get("BASE_URL")
+        response = requests.get(f"{BASE_URL}/get-my-fb-account-cookie", headers=headers)
         current_sb_datr = []
         if response.status_code == 200:
             cookies = response.json().get('cookies')
@@ -235,7 +236,8 @@ class MainWindow(QMainWindow):
             "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
             "s-key": f"{_TNITBEST321JS.get('secret_key')}"
         }
-        response = requests.get(GET_COOKIE_URL, headers=headers)
+        BASE_URL = _TNITBEST321JS.get("BASE_URL")
+        response = requests.get(f"{BASE_URL}/get-my-fb-account-cookie", headers=headers)
         if response.status_code == 200:
             cookies = response.json().get('cookies')
             self.browser.setCookies(cookies)
@@ -257,7 +259,8 @@ class MainWindow(QMainWindow):
                     "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
                     "s-key": f"{_TNITBEST321JS.get('secret_key')}"
                 }
-                response = requests.put(UPDATE_URL, json=json, headers=headers)
+                BASE_URL = _TNITBEST321JS.get("BASE_URL")
+                response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json=json, headers=headers)
                 if response.status_code == 200:
                     dlg = QMessageBox(self)
                     dlg.setWindowTitle("Thông báo")

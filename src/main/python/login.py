@@ -2,9 +2,10 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
-from settings import LOGIN_URL, TNITBEST321JS
+from settings import TNITBEST321JS
 from utils import ImportExportLoginInfo
 
+BASE_URL = None
 
 class LoginForm(object):
     def setupUi(self, Form, ctx):
@@ -25,7 +26,7 @@ class LoginForm(object):
         self.textEdit.setStyleSheet("border: none")
         self.textEdit.setObjectName("textEdit")
         self.gridLayoutWidget = QtWidgets.QWidget(Form)
-        self.gridLayoutWidget.setGeometry(QtCore.QRect(80, 80, 371, 171))
+        self.gridLayoutWidget.setGeometry(QtCore.QRect(10, 90, 511, 291))
         self.gridLayoutWidget.setObjectName("gridLayoutWidget")
         self.gridLayout_3 = QtWidgets.QGridLayout(self.gridLayoutWidget)
         self.gridLayout_3.setContentsMargins(0, 0, 0, 0)
@@ -37,17 +38,18 @@ class LoginForm(object):
                                     "    padding: 8px;\n"
                                     "    background: white;\n"
                                     "    selection-background-color: darkgray;\n"
+                                    "}\n"
+                                    "\n"
+                                    "QLineEdit:focus {\n"
+                                    "    border: 1px solid #00aa7f;\n"
                                     "}")
-        self.password.setObjectName("password")
+        self.password.setInputMask("")
         self.password.setEchoMode(QtWidgets.QLineEdit.Password)
-        self.password.textChanged.connect(self._on_text_changed)
-        self.gridLayout_3.addWidget(self.password, 4, 1, 1, 1)
-        self.label = QtWidgets.QLabel(self.gridLayoutWidget)
-        self.label.setObjectName("label")
-        self.gridLayout_3.addWidget(self.label, 4, 0, 1, 1)
+        self.password.setObjectName("password")
+        self.gridLayout_3.addWidget(self.password, 6, 1, 1, 1)
         self.label_2 = QtWidgets.QLabel(self.gridLayoutWidget)
         self.label_2.setObjectName("label_2")
-        self.gridLayout_3.addWidget(self.label_2, 0, 0, 1, 1)
+        self.gridLayout_3.addWidget(self.label_2, 1, 0, 1, 1)
         self.email = QtWidgets.QLineEdit(self.gridLayoutWidget)
         self.email.setStyleSheet("QLineEdit {\n"
                                  "    border: 1px solid gray;\n"
@@ -55,54 +57,34 @@ class LoginForm(object):
                                  "    padding: 8px;\n"
                                  "    background: white;\n"
                                  "    selection-background-color: darkgray;\n"
+                                 "}\n"
+                                 "\n"
+                                 "QLineEdit:focus {\n"
+                                 "    border: 1px solid #00aa7f;\n"
                                  "}")
-        self.email.setPlaceholderText("")
         self.email.setObjectName("email")
-        self.email.setFocus()
-        self.email.textChanged.connect(self._on_text_changed)
-        self.gridLayout_3.addWidget(self.email, 0, 1, 1, 1)
-        self.horizontalLayoutWidget = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget.setGeometry(QtCore.QRect(370, 330, 161, 61))
-        self.horizontalLayoutWidget.setObjectName("horizontalLayoutWidget")
-        self.horizontalLayout = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget)
-        self.horizontalLayout.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout.setObjectName("horizontalLayout")
-        self.login_btn = QtWidgets.QPushButton(self.horizontalLayoutWidget)
-        self.login_btn.setDisabled(True)
-        self.login_btn.setStyleSheet("QPushButton {\n"
-                                     "    border: 1px solid #8f8f91;\n"
-                                     "    border-radius: 2px;\n"
-                                     "    background-color: qlineargradient(spread:pad, x1:0.557, y1:0.414682, x2:0, y2:0, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                     "    min-width: 80px;\n"
-                                     "    padding: 13px;\n"
-                                     "    color: white;\n"
-                                     "}\n"
-                                     "\n"
-                                     "QPushButton:pressed {\n"
-                                     "    color: qlineargradient(spread:pad, x1:0.557, y1:0.414682, x2:0, y2:0, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                     "    background-color: qlineargradient(spread:pad, x1:0.317864, y1:0.352, x2:1, y2:1, stop:0 rgba(7, 147, 124, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                     "}\n"
-                                     "\n"
-                                     "QPushButton:flat {\n"
-                                     "    border: none; /* no border for a flat push button */\n"
-                                     "}\n"
-                                     "\n"
-                                     "QPushButton:default {\n"
-                                     "    border-color: navy; /* make the default button prominent */\n"
-                                     "}")
-        self.login_btn.setDefault(True)
-        self.login_btn.setFlat(True)
-        self.login_btn.setObjectName("login_btn")
-        self.login_btn.clicked.connect(self._login)
-        self.login_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
-        self.horizontalLayout.addWidget(self.login_btn, 0, QtCore.Qt.AlignHCenter)
-        self.horizontalLayoutWidget_2 = QtWidgets.QWidget(Form)
-        self.horizontalLayoutWidget_2.setGeometry(QtCore.QRect(80, 250, 371, 41))
-        self.horizontalLayoutWidget_2.setObjectName("horizontalLayoutWidget_2")
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout(self.horizontalLayoutWidget_2)
-        self.horizontalLayout_2.setContentsMargins(0, 0, 0, 0)
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.forgot_pwd_btn = QtWidgets.QCommandLinkButton(self.horizontalLayoutWidget_2)
+        self.gridLayout_3.addWidget(self.email, 1, 1, 1, 1)
+        self.label = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label.setObjectName("label")
+        self.gridLayout_3.addWidget(self.label, 6, 0, 1, 1)
+        self.crawlerUrl = QtWidgets.QLineEdit(self.gridLayoutWidget)
+        self.crawlerUrl.setStyleSheet("QLineEdit {\n"
+                                      "    border: 1px solid gray;\n"
+                                      "    border-radius: 3px;\n"
+                                      "    padding: 8px;\n"
+                                      "    background: white;\n"
+                                      "    selection-background-color: darkgray;\n"
+                                      "}\n"
+                                      "\n"
+                                      "QLineEdit:focus {\n"
+                                      "    border: 1px solid #00aa7f;\n"
+                                      "}")
+        self.crawlerUrl.setObjectName("crawlerUrl")
+        self.gridLayout_3.addWidget(self.crawlerUrl, 0, 1, 1, 1)
+        self.label_3 = QtWidgets.QLabel(self.gridLayoutWidget)
+        self.label_3.setObjectName("label_3")
+        self.gridLayout_3.addWidget(self.label_3, 0, 0, 1, 1)
+        self.forgot_pwd_btn = QtWidgets.QCommandLinkButton(self.gridLayoutWidget)
         font = QtGui.QFont()
         font.setFamily("Segoe UI")
         font.setItalic(False)
@@ -133,10 +115,48 @@ class LoginForm(object):
         self.forgot_pwd_btn.setAutoDefault(False)
         self.forgot_pwd_btn.setDefault(True)
         self.forgot_pwd_btn.setObjectName("forgot_pwd_btn")
-        self.horizontalLayout_2.addWidget(self.forgot_pwd_btn, 0, QtCore.Qt.AlignLeft)
+        self.gridLayout_3.addWidget(self.forgot_pwd_btn, 7, 0, 1, 1)
+        self.login_btn = QtWidgets.QPushButton(self.gridLayoutWidget)
+        self.login_btn.setEnabled(True)
+        self.login_btn.setCursor(QtGui.QCursor(QtCore.Qt.PointingHandCursor))
+        self.login_btn.setStyleSheet("QPushButton {\n"
+                                     "    border: 1px solid #00aa7f;\n"
+                                     "    border-radius: 2px;\n"
+                                     "    background-color:#00aa7f;\n"
+                                     "    min-width: 80px;\n"
+                                     "    padding: 13px;\n"
+                                     "    color: white;\n"
+                                     "}\n"
+                                     "\n"
+                                     "QPushButton:pressed {\n"
+                                     "    color: #00aa7f;\n"
+                                     "    background-color: #ffffff;\n"
+                                     "}\n"
+                                     "\n"
+                                     "QPushButton:hover {\n"
+                                     "    color: #00aa7f;\n"
+                                     "    background-color: #ffffff;\n"
+                                     "    border: 1px solid #00aa7f;\n"
+                                     "}\n"
+                                     "\n"
+                                     "QPushButton:default {\n"
+                                     "    border-color: #00aa7f; /* make the default button prominent */\n"
+                                     "}")
+        self.login_btn.setDefault(True)
+        self.login_btn.setFlat(True)
+        self.login_btn.setObjectName("login_btn")
+        self.gridLayout_3.addWidget(self.login_btn, 7, 1, 1, 1)
 
         self.retranslateUi(Form)
         QtCore.QMetaObject.connectSlotsByName(Form)
+        Form.setTabOrder(self.crawlerUrl, self.email)
+        Form.setTabOrder(self.email, self.password)
+        Form.setTabOrder(self.password, self.login_btn)
+        Form.setTabOrder(self.login_btn, self.textEdit)
+        self.email.textChanged.connect(self._on_text_changed)
+        self.crawlerUrl.textChanged.connect(self._on_text_changed)
+        self.login_btn.clicked.connect(self._login)
+
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
@@ -149,27 +169,42 @@ class LoginForm(object):
                                          "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
                                          "<p align=\"center\" style=\"-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><br /></p>\n"
                                          "<p align=\"center\" style=\" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;\"><span style=\" font-size:14pt; font-weight:600; color:#00aa7f;\">Đăng nhập FbSyncAccount</span></p></body></html>"))
-        self.label.setText(_translate("Form",
-                                      "<html><head/><body><p><span style=\" font-size:11pt; font-weight:600; text-decoration: underline;\">Mật khẩu</span></p></body></html>"))
+        self.password.setPlaceholderText(_translate("Form", "Nhập mật khẩu đăng nhập hệ thống"))
         self.label_2.setText(_translate("Form",
-                                        "<html><head/><body><p><span style=\" font-size:11pt; font-weight:600; text-decoration: underline;\">Email</span></p></body></html>"))
-        self.login_btn.setText(_translate("Form", "Đăng nhập"))
+                                        "<html><head/><body><p><span style=\" font-size:11pt; font-weight:600; color:#00aa7f;\">Email</span></p></body></html>"))
+        self.email.setPlaceholderText(_translate("Form", "Nhập địa chỉ email tài khoản hệ thống"))
+        self.label.setText(_translate("Form",
+                                      "<html><head/><body><p><span style=\" font-size:11pt; font-weight:600; color:#00aa7f;\">Mật khẩu</span></p></body></html>"))
+        self.crawlerUrl.setPlaceholderText(_translate("Form", "Nhập địa chỉ url điều khiển crawler"))
+        self.label_3.setText(_translate("Form",
+                                        "<html><head/><body><p><span style=\" font-size:11pt; font-weight:600; color:#00aa7f;\">CrawlerURL</span></p></body></html>"))
         self.forgot_pwd_btn.setText(_translate("Form", "Quên mật khẩu?"))
+        self.login_btn.setText(_translate("Form", "Đăng nhập >"))
 
     def setUpAfterLogin(self, window: QMainWindow):
         self.window = window
 
     def _on_text_changed(self):
-        self.login_btn.setEnabled(bool(self.email.text()) and bool(self.password.text()))
+        global BASE_URL
+        BASE_URL = self.crawlerUrl.text()
+        self.login_btn.setEnabled(bool(self.email.text()) and bool(self.password.text()) and bool(BASE_URL))
 
     def _login(self):
+        if not BASE_URL:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Information)
+            msg.setText("Thiếu CrawlUrl")
+            msg.setInformativeText("Vui lòng nhập CrawlUrl!")
+            msg.setWindowTitle("Thông báo")
+            msg.exec_()
+            return
         # Get Email
         email = self.email.text()
         # Get Password
         pwd = self.password.text()
 
         response = requests.post(
-            LOGIN_URL,
+            f"{BASE_URL}/login",
             json={
                 'email': email,
                 'password': pwd
@@ -177,7 +212,9 @@ class LoginForm(object):
         )
 
         if response.status_code == 200:
-            iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS), response.json())
+            data: dict = response.json()
+            data["BASE_URL"] = BASE_URL
+            iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS), data)
             iei.export()
             self.window.show()
             self._form.close()
