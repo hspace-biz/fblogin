@@ -187,8 +187,12 @@ class LoginForm(object):
     def _on_text_changed(self):
         global BASE_URL
         BASE_URL = self.crawlerUrl.text()
+        if len(BASE_URL) > 8:
+            self.crawlerUrl.setText(BASE_URL.strip("/"))
+            BASE_URL = BASE_URL.strip("/")
 
     def _login(self):
+        global BASE_URL
         if not BASE_URL:
             msg = QMessageBox()
             msg.setIcon(QMessageBox.Information)
@@ -197,6 +201,7 @@ class LoginForm(object):
             msg.setWindowTitle("Thông báo")
             msg.exec_()
             return
+        BASE_URL = BASE_URL.strip("/")
         # Get Email
         email = self.email.text()
         # Get Password

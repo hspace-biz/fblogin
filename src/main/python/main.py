@@ -171,6 +171,41 @@ class MainWindow(QMainWindow):
         else:
             current_cookies = self.browser.get_cookies()
 
+        # CHeck if user logged in or not
+        is_logged_in = False
+        for _cookie in current_cookies:
+            name = _cookie.get('name')
+            if not is_logged_in and name == "xs":
+                is_logged_in = True
+                break
+
+        if not is_logged_in:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Đăng nhập trước khi cập nhật cookie!")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+            return False
+
+        response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json={'cookies': current_cookies}, headers=headers)
+
+        if response.status_code == 200:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cập nhật cookie thành công")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+        else:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cập nhật cookie không thành công")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setInformativeText(response.text)
+            dlg.setIcon(QMessageBox.Information)
+            button = dlg.exec()
+
 
         # CHeck if user logged in or not
         is_logged_in = False
@@ -189,7 +224,7 @@ class MainWindow(QMainWindow):
             button = dlg.exec()
             return False
 
-        response = requests.put(UPDATE_URL, json={'cookies': current_cookies}, headers=headers)
+        response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json={'cookies': current_cookies}, headers=headers)
 
         if response.status_code == 200:
             dlg = QMessageBox(self)
