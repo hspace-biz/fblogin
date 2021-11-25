@@ -6,7 +6,12 @@ from PyQt5.QtCore import QDateTime
 from PyQt5.QtNetwork import QNetworkCookie
 from PyQt5.QtWebEngineWidgets import QWebEngineProfile, QWebEngineView
 from PyQt5.QtWidgets import QDialog, QDialogButtonBox, QVBoxLayout, QLabel, QMessageBox
+import json
 
+
+
+def disable_account(uid:str):
+    pass
 
 class CustomQWebEngine(QWebEngineView):
 
@@ -22,15 +27,19 @@ class CustomQWebEngine(QWebEngineView):
     def onCookieAdd(self, cookie):
         # Just receive cookie from facebook
         c = QNetworkCookie(cookie)
-        print("cookie added")
-        print(self.get_cookies())
-        print("="*80)
+        # print("cookie added")
+        # print(self.get_cookies())
+        # print("="*80)
         if re.search(r'facebook.com', c.domain()):
             name = bytearray(c.name()).decode()
             if name not in ["ATN", "IDE", '_js_datr', 'checkpoint']:
                 self._cookies.append(c)
                 if name == 'fr':
-                    fr_cookie_name_timestamp = c.expirationDate().toPyDateTime().timestamp()
+                    fr_cookie_name_timestamp = None
+                    try:
+                        fr_cookie_name_timestamp = c.expirationDate().toPyDateTime().timestamp()
+                    except:
+                        fr_cookie_name_timestamp = 1668137438
                     x = datetime.timedelta(days=82, seconds=86341, microseconds=72000)
                     wd_expiry = fr_cookie_name_timestamp - x.total_seconds()
                     # Create wd cookie
@@ -51,18 +60,41 @@ class CustomQWebEngine(QWebEngineView):
                 for cookie in cookies:
                     qnet_cookie = QNetworkCookie()
                     qnet_cookie.setName(bytes(cookie.get('name').encode()))
-                    qnet_cookie.setDomain(cookie.get('domain'))
+                    if cookie.get('domain'):
+                        qnet_cookie.setDomain(cookie.get('domain'))
+                    else:
+                        qnet_cookie.setDomain('.facebook.com')
+                    
                     qnet_cookie.setValue(bytes(cookie.get('value').encode()))
-                    qnet_cookie.setPath(cookie.get('path'))
-                    expiration_date = QDateTime.fromTime_t(cookie.get('expiry'))
-                    qnet_cookie.setExpirationDate(expiration_date)
-                    qnet_cookie.setSecure(cookie.get('secure'))
-                    qnet_cookie.setHttpOnly(cookie.get('httpOnly'))
+                    if cookie.get('path'):
+                        qnet_cookie.setPath(cookie.get('path'))
+                    else:
+                        qnet_cookie.setPath("/")
+                        
+                    if cookie.get('expiry'):
+                        expiration_date = QDateTime.fromTime_t(cookie.get('expiry'))
+                        qnet_cookie.setExpirationDate(expiration_date)
+                    else:
+                        expiration_date = QDateTime.fromTime_t(1668137438)
+                       
+                  
+                    if cookie.get('secure'):
+                        qnet_cookie.setSecure(cookie.get('secure'))
+                    else:
+                        qnet_cookie.setSecure(True)
+                        
+                        
+                    if cookie.get('httpOnly'):
+                        qnet_cookie.setHttpOnly(cookie.get('httpOnly'))
+                    else:
+                        qnet_cookie.setHttpOnly(False)
+                        
+                        
                     QWebEngineProfile.defaultProfile().cookieStore().setCookie(QNetworkCookie(qnet_cookie))
-        except Exception:
+        except Exception as ex:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cookie không hợp lệ!")
+            dlg.setText(f"Cookie không hợp lệ!\n {ex}")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
             button = dlg.exec()
@@ -80,10 +112,15 @@ class CustomQWebEngine(QWebEngineView):
             # Find max expiry time for each cookie key
             max_per_name = dict()
             for c_key in names:
-                max_per_name[f'{c_key}'] = 0.0
+                max_per_name[f'{c_key}'] = 973999838
             for c_key in names:
                 for c in self._cookies:
-                    exp = c.expirationDate().toPyDateTime().timestamp()
+                    exp = None
+                    try:
+                        exp = c.expirationDate().toPyDateTime().timestamp()
+                    except:
+                        exp = 1668137438
+                    
                     name = bytearray(c.name()).decode()
                     if c_key == name:
                         if max_per_name[f'{c_key}'] < exp:
@@ -93,7 +130,14 @@ class CustomQWebEngine(QWebEngineView):
             print(max_per_name)
             # Keep cookie keys with max one
             for c in self._cookies:
-                exp = c.expirationDate().toPyDateTime().timestamp()
+                exp = None
+                exp = None
+                try:
+                    exp = c.expirationDate().toPyDateTime().timestamp()
+                except:
+                    exp = 1668137438
+                    
+                # exp = c.expirationDate().toPyDateTime().timestamp()
                 name = bytearray(c.name()).decode()
                 if max_per_name[f'{name}'] == exp and name not in added:
                     clean_cookies.append(c)
@@ -113,12 +157,18 @@ class CustomQWebEngine(QWebEngineView):
         clean_cookies = self.clean_cookies()
         for c in clean_cookies:
             name = bytearray(c.name()).decode()
+            exp = None
+            try:
+                exp = c.expirationDate().toPyDateTime().timestamp()
+            except:
+                exp = 1668137438
+            
             data = {
                 "name": name,
                 "domain": c.domain(),
                 "value": bytearray(c.value()).decode(),
                 "path": c.path(),
-                "expiry": c.expirationDate().toPyDateTime().timestamp(),
+                "expiry": exp,
                 "secure": c.isSecure(),
                 "httpOnly": c.isHttpOnly(),
                 "sameSite": "None" if name != 'wd' else 'Lax'
@@ -181,3 +231,12 @@ class ImportExportLoginInfo:
                 return json.loads(b.decode())
         except Exception:
             return None
+    def _import_json(self):
+        try:
+            data = self._import()
+            if data:
+                data = data.replace("'",'"')
+            return json.loads(data)
+        except Exception as ex:
+            return None
+

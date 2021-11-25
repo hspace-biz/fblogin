@@ -2,16 +2,30 @@ import requests
 from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtWidgets import QMainWindow, QMessageBox
 
-from settings import TNITBEST321JS
+from settings import TNITBEST321JS,TNITBEST32001,TNITBEST32002,TNITBEST32003
 from utils import ImportExportLoginInfo
-
+import os
 BASE_URL = None
+
 
 class LoginForm(object):
     def setupUi(self, Form, ctx):
+        global BASE_URL
         # For controlling form
         self._form = Form
         self.ctx = ctx
+
+
+        self._TNITBEST32001 = {"url":"","em":"","pa":""}
+        if os.path.isfile(self.ctx.get_resource(TNITBEST32001)):
+            iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST32001))
+            result = iei._import_json()
+            if result is not None:
+                self._TNITBEST32001 = result
+                BASE_URL = self._TNITBEST32001["url"]
+
+      
+        
         # Init UI for login form
         Form.setObjectName("Form")
         Form.resize(533, 393)
@@ -156,6 +170,8 @@ class LoginForm(object):
         self.email.textChanged.connect(self._on_text_changed)
         self.crawlerUrl.textChanged.connect(self._on_text_changed)
         self.login_btn.clicked.connect(self._login)
+        
+        
 
 
     def retranslateUi(self, Form):
@@ -181,6 +197,9 @@ class LoginForm(object):
         self.forgot_pwd_btn.setText(_translate("Form", "Quên mật khẩu?"))
         self.login_btn.setText(_translate("Form", "Đăng nhập >"))
 
+        self.crawlerUrl.setText(_translate("Form", self._TNITBEST32001.get("url")))
+        self.email.setText(_translate("Form", self._TNITBEST32001.get("em")))
+        self.password.setText(_translate("Form", self._TNITBEST32001.get("pa")))
     def setUpAfterLogin(self, window: QMainWindow):
         self.window = window
 
@@ -190,6 +209,45 @@ class LoginForm(object):
         if len(BASE_URL) > 8:
             self.crawlerUrl.setText(BASE_URL.strip("/"))
             BASE_URL = BASE_URL.strip("/")
+            
+    def __save_data__(self,file_path:str,data:str):
+        """Save data to file_path
+            if data is None or len(data)<=0 then do not thing
+        Args:
+            file_path (str): file_path to save data
+            data (str): data to save
+        """
+        if data is None or len(data)<=0:
+            return
+        file_path = file_path.replace("\\","/")
+        file_name = file_path.split("/")[-1]
+        folder_path = file_path.replace(file_name,"")
+        if os.path.isdir(folder_path) == False:
+            os.makedirs(folder_path)
+        try:
+            with open(file=file_path,mode="w",encoding="utf8") as file:
+                file.write(data)
+            print()
+        except Exception as ex:
+            print(ex)
+        
+            
+    def __load_save_data__(self,file_path:str)->str():
+        """Read data from file, if file does't exist then return None
+
+        Returns:
+            str: content of file
+            None: File dosen't exist
+        """
+        
+        if os.path.isfile(file_path) == False:
+            return None
+        retVal = ""
+        with open(file=file_path,mode="r",encoding="utf8") as file:
+            retVal = file.read()
+        return retVal
+        
+            
 
     def _login(self):
         global BASE_URL
@@ -201,6 +259,14 @@ class LoginForm(object):
             msg.setWindowTitle("Thông báo")
             msg.exec_()
             return
+        data = {
+            "url":self.crawlerUrl.text(),
+            "em":self.email.text(),
+            "pa":self.password.text()
+        }
+        iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST32001), str(data))
+        iei.export()
+       
         BASE_URL = BASE_URL.strip("/")
         # Get Email
         email = self.email.text()
