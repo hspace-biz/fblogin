@@ -250,7 +250,7 @@ class Mananger_account(Ui_Mananger_Account):
         text = self.lineEdit_search_text.text()
         if len(text) == 0:
             self.lineEdit_search_text.setPlaceholderText(
-                "Vui lòng nhập UID cần tìm vào đây hoặc gõ 'a' để hiển thị đầy đủ!")
+                "Vui lòng nhập UID cần tìm vào đây hoặc gõ 'all' để hiển thị đầy đủ!")
             self.lineEdit_search_text.setStyleSheet("QLineEdit {\n"
                                                     "   color: red;\n"
                                                     "   border-radius: 3px;\n"
