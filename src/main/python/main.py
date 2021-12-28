@@ -176,6 +176,7 @@ class MainWindow(QMainWindow):
             dlg.setIcon(QMessageBox.Information)
             dlg.show()
             self.wait_dlg = dlg
+            self.uid_taget is None
 
 
         if self.uid_taget is None:
