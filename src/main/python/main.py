@@ -283,7 +283,7 @@ class MainWindow(QMainWindow):
             
         response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json=payload, headers=headers)
         
-        print(f"Current cookies: {current_cookies}")
+        print(f"Current cookies: {response.text}")
         if response.status_code == 200:
             if self.wait_dlg is not None:
                 self.wait_dlg.close()
@@ -296,6 +296,18 @@ class MainWindow(QMainWindow):
             dlg.exec()
             
             return False
+        elif response.status_code==400:
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText("Cập nhật cookie không thành công")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setInformativeText(f"Phiên đăng nhập hiện tại của tài khoản đã kết thúc do tài khoản đã được đăng nhập ở nơi khác.")
+            dlg.setIcon(QMessageBox.Information)
+            dlg.exec()
+            return False
         else:
             if self.wait_dlg is not None:
                 self.wait_dlg.close()
@@ -304,7 +316,7 @@ class MainWindow(QMainWindow):
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie không thành công")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setInformativeText(response.text)
+            dlg.setInformativeText(f"Error: {response.status_code} -- {response.text}")
             dlg.setIcon(QMessageBox.Information)
             dlg.exec()
             
@@ -349,51 +361,6 @@ class MainWindow(QMainWindow):
             self.browser.setUrl(QUrl(f"https://www.facebook.com/{self.uid_taget}"))
         self.uid_taget = None
         
-    def loaded_page_contain_access_token(self):
-        def find_in_html(html):
-            access_token = re.search(r'(?P<access_token>EAAA\w+)', html)
-            if access_token:
-                access_token = access_token.groupdict().get('access_token')
-                self.browser.setUrl(QUrl(self.init_url))
-                _TNITBEST321JS = dict()
-                iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
-                _TNITBEST321JS = iei.import_()
-                json = {
-                    "access_token": access_token,
-                }
-                headers = {
-                    "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
-                    "s-key": f"{_TNITBEST321JS.get('secret_key')}"
-                }
-                BASE_URL = _TNITBEST321JS.get("BASE_URL")
-                response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json=json, headers=headers)
-                if response.status_code == 200:
-                    if self.wait_dlg is not None:
-                        self.wait_dlg.close()
-                        self.wait_dlg = None
-                    dlg = QMessageBox(self)
-                    dlg.setWindowTitle("Thông báo")
-                    dlg.setText("Cập nhật token thành công")
-                    dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                    dlg.setIcon(QMessageBox.Information)
-                    dlg.exec()
-                    
-                    return True
-                else:
-                    if self.wait_dlg is not None:
-                        self.wait_dlg.close()
-                        self.wait_dlg = None
-                    dlg = QMessageBox(self)
-                    dlg.setWindowTitle("Thông báo")
-                    dlg.setText("Cập nhật token không thành công")
-                    dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-                    dlg.setInformativeText(response.text)
-                    dlg.setIcon(QMessageBox.Information)
-                    dlg.exec()
-                    
-                    return True
-
-        self.browser.page().toHtml(find_in_html)
 
     def _about(self):
         self.about_window = QWidget()
