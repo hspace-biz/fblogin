@@ -346,7 +346,7 @@ class MainWindow(QMainWindow):
             self.browser.setCookies(cookies)
             self.browser.reload()
             self.browser.setUrl(QUrl(f"https://www.facebook.com/{self.uid_taget}"))
-            
+        self.uid_taget = None
         
     def loaded_page_contain_access_token(self):
         def find_in_html(html):
