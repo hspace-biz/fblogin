@@ -16,7 +16,7 @@ from login import LoginForm
 from mananger_account_over import Mananger_account
 from settings import TNITBEST321JS
 from utils import ImportExportLoginInfo, CustomQWebEngine
-
+import inspect
 
 class MainWindow(QMainWindow):
     def __init__(self, *args, **kwargs):
@@ -27,6 +27,7 @@ class MainWindow(QMainWindow):
         del kwargs['ctx']
         super(MainWindow, self).__init__(*args, **kwargs)
         self.uid_taget = None
+        self.wait_dlg = None
         self.initUi()
         
         
@@ -94,8 +95,7 @@ class MainWindow(QMainWindow):
 
         function = QMenu('&Chức năng', self)
         function.addAction(self.update_cookie_action)
-        # function.addAction(self.update_token_action)
-        # function.addAction(self.login_with_cookie_action)
+
         function.addAction(self.exit_acction)
         menu_bar.addMenu(function)
 
@@ -108,23 +108,12 @@ class MainWindow(QMainWindow):
         self.exit_acction.setShortcuts(QKeySequence(self.tr("Ctrl+Q")))
         self.exit_acction.triggered.connect(lambda self: sys.exit(1))
 
-        # self.login_with_cookie_action = QAction(self)
-        # self.login_with_cookie_action.setText('Đăng nhập bằng cookie')
-        # self.login_with_cookie_action.setIcon(QIcon(self.ctx.get_resource('images/icons_cookie.png')))
-        # self.login_with_cookie_action.setShortcuts(QKeySequence(self.tr("Ctrl+C")))
-        # self.login_with_cookie_action.triggered.connect(lambda: self.login_with_cookie())
 
         self.update_cookie_action = QAction(self)
         self.update_cookie_action.setText('Cập nhật cookie')
         self.update_cookie_action.setIcon(QIcon(self.ctx.get_resource('images/icon_up.png')))
         self.update_cookie_action.setShortcuts(QKeySequence(self.tr("Ctrl+U")))
         self.update_cookie_action.triggered.connect(self.update_cookie)
-
-        # self.update_token_action = QAction(self)
-        # self.update_token_action.setText('Cập nhật access token')
-        # self.update_token_action.setIcon(QIcon(self.ctx.get_resource('images/icon_key.png')))
-        # self.update_token_action.setShortcuts(QKeySequence(self.tr("Ctrl+A")))
-        # self.update_token_action.triggered.connect(self.update_access_token)
 
         self.about_action = QAction(self)
         self.about_action.setText('&Giới thiệu')
@@ -150,22 +139,19 @@ class MainWindow(QMainWindow):
         self.address.setText(url.toString())
 
     def __set_name__(self,result):
+        self.browser.loadFinished.disconnect()
         self.name_user = result
         self.browser.page().runJavaScript(
             "document.evaluate(\"//*[@id='root']//div/a[contains(@href,'/photo.php')]/img[contains(@alt,'profile picture')]/@src\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__set_avatar__
         )
+        return False
     def __set_avatar__(self,result):
         self.avatar_url = result
         self.__update_cookie()
-        
-        
-        # self.browser.load(QUrl(f"https://mbasic.facebook.com/profile.php?v=friends"))
-        # self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
-        #         "document.evaluate(\"//*[@id='root']//h3\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__set_c_friends__
-        #     ))
+        return True
         
     def __set_c_friends__(self,result:str):
-        self.browser.loadFinished.connect(lambda x:print("xong"))
+        self.browser.loadFinished.disconnect()
         if result is not None:
             result = result.split(" ")[-1].replace("(","").replace(")","")
             try:
@@ -179,28 +165,19 @@ class MainWindow(QMainWindow):
     
         
     def _on_load_finished(self):
-        
-        if self.browser.history().canGoBack():
-            self.backBtn.setEnabled(True)
-        else:
-            self.backBtn.setEnabled(False)
-
-        if self.browser.history().canGoForward():
-            self.forBtn.setEnabled(True)
-        else:
-            self.forBtn.setEnabled(False)
-            
-        if self.is_update:
-            self.is_update = False
-            
+        pass
+ 
         
     def update_cookie(self):
-        dlg = QMessageBox(self)
-        dlg.setWindowTitle("Thông báo")
-        dlg.setText(f"Bắt đầu cập nhật cookie, vui lòng chờ vài giây.")
-        dlg.setIcon(QMessageBox.Information)
-        dlg.show()
-        self.wait_dlg = dlg
+        if self.wait_dlg is None:
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText(f"Bắt đầu cập nhật cookie, vui lòng chờ vài giây.")
+            dlg.setIcon(QMessageBox.Information)
+            dlg.show()
+            self.wait_dlg = dlg
+
+
         if self.uid_taget is None:
             self.browser.load(QUrl(f"https://mbasic.facebook.com"))
             self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
@@ -211,35 +188,46 @@ class MainWindow(QMainWindow):
             self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
                     "document.evaluate(\"//*[@id='root']//strong\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__set_name__
                 ))
+
+ 
+    def __load_fi(self,name = None):
+        print(f"{name}    load finish!")
         
     def __get_uid_taget__(self,result:str):
         try:
+            self.browser.loadFinished.disconnect()
             result = result.split("target=")[-1].split("&")[0]
             self.uid_taget = result
             self.update_cookie()
         except Exception as ex:
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText(f"Error: {ex}")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
+            dlg.exec()
+            
+        return False
         
         
     def __update_cookie(self):
         update_name = True
         if self.name_user is None or len(self.name_user)<=3 or self.avatar_url is None or len(self.avatar_url)<=len("https://"):
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText(f"Không tìm thấy thông tin tài khoản hoặc thông tin tài khoản sai:\n*Name: {self.name_user}\n*Avatar url: {self.avatar_url}")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
-            dlg.show()
+            dlg.exec()
             update_name = False
-            self.wait_dlg.close()
-            return True
+            
+            return False
             # return False
         # self.browser.setUrl(QUrl(f"https://www.facebook.com/{self.uid_taget}"))
         print(f'user name: {self.name_user}')
@@ -274,13 +262,17 @@ class MainWindow(QMainWindow):
                 break
 
         if not is_logged_in:
+            
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Đăng nhập trước khi cập nhật cookie!")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
+            dlg.exec()
+            
             return True
 
         payload = {'cookies': current_cookies}
@@ -292,86 +284,33 @@ class MainWindow(QMainWindow):
         
         print(f"Current cookies: {current_cookies}")
         if response.status_code == 200:
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie thành công")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
+            dlg.exec()
+            
+            return False
         else:
+            if self.wait_dlg is not None:
+                self.wait_dlg.close()
+                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie không thành công")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setInformativeText(response.text)
             dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-
-
-        # CHeck if user logged in or not
-        is_logged_in = False
-        for _cookie in current_cookies:
-            name = _cookie.get('name')
-            if not is_logged_in and name == "xs":
-                is_logged_in = True
-                break
-
-        if not is_logged_in:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Đăng nhập trước khi cập nhật cookie!")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
-
-        response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json={'cookies': current_cookies}, headers=headers)
-
-        if response.status_code == 200:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật cookie thành công")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
-        else:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật cookie không thành công")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setInformativeText(response.text)
-            dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
+            dlg.exec()
+            
+            return False
 
     def update_access_token(self):
-        # CHeck if user logged in or not
-        is_logged_in = False
-        for _cookie in self.browser.get_cookies():
-            name = _cookie.get('name')
-            if not is_logged_in and name == "xs":
-                is_logged_in = True
-                break
-
-        if not is_logged_in:
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText("Đăng nhập trước khi cập nhật access token!")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setIcon(QMessageBox.Information)
-            dlg.show()
-            self.wait_dlg.close()
-            return True
-
-        self.browser.setUrl(QUrl("https://m.facebook.com/composer/ocelot/async_loader/?publisher=feed"))
-        self.browser.loadFinished.connect(self.loaded_page_contain_access_token)
+        pass
     
     def login_with_cookie_input(self,cookies):
         self._init_new_browser('https://www.facebook.com')
@@ -428,22 +367,30 @@ class MainWindow(QMainWindow):
                 BASE_URL = _TNITBEST321JS.get("BASE_URL")
                 response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json=json, headers=headers)
                 if response.status_code == 200:
+                    if self.wait_dlg is not None:
+                        self.wait_dlg.close()
+                        self.wait_dlg = None
                     dlg = QMessageBox(self)
                     dlg.setWindowTitle("Thông báo")
                     dlg.setText("Cập nhật token thành công")
                     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     dlg.setIcon(QMessageBox.Information)
-                    dlg.show()
-                    self.wait_dlg.close()
+                    dlg.exec()
+                    
+                    return True
                 else:
+                    if self.wait_dlg is not None:
+                        self.wait_dlg.close()
+                        self.wait_dlg = None
                     dlg = QMessageBox(self)
                     dlg.setWindowTitle("Thông báo")
                     dlg.setText("Cập nhật token không thành công")
                     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
                     dlg.setInformativeText(response.text)
                     dlg.setIcon(QMessageBox.Information)
-                    dlg.show()
-                    self.wait_dlg.close()
+                    dlg.exec()
+                    
+                    return True
 
         self.browser.page().toHtml(find_in_html)
 
