@@ -139,6 +139,13 @@ class MainWindow(QMainWindow):
         self.address.setText(url.toString())
 
     def __set_name__(self,result):
+        current_url = str(self.browser.url().url())
+     
+        self.browser.load(QUrl(f"https://mbasic.facebook.com/{self.uid_taget}"))
+        self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
+                "document.evaluate(\"//*[@id='root']//strong\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__set_name__
+            ))
+            
         self.browser.loadFinished.disconnect()
         self.name_user = result
         self.browser.page().runJavaScript(
@@ -182,22 +189,18 @@ class MainWindow(QMainWindow):
         if self.uid_taget is None:
             self.browser.load(QUrl(f"https://mbasic.facebook.com"))
             self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
-                    "document.evaluate(\"//*[contains(@href,'target=')]/@href\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__get_uid_taget__
+                    "document.evaluate(\"//a[contains(@href,'a/like.php')]/@href\", document.body, null, XPathResult.STRING_TYPE, null).stringValue.split(\"&av=\")[1].split(\"&\")[0]", self.__get_uid_taget__
                 ))
         else:
-            self.browser.load(QUrl(f"https://mbasic.facebook.com/{self.uid_taget}"))
+            self.browser.load(QUrl(f"https://mbasic.facebook.com/profile.php?_rdr"))
             self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
                     "document.evaluate(\"//*[@id='root']//strong\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__set_name__
                 ))
 
  
-    def __load_fi(self,name = None):
-        print(f"{name}    load finish!")
-        
     def __get_uid_taget__(self,result:str):
         try:
             self.browser.loadFinished.disconnect()
-            result = result.split("target=")[-1].split("&")[0]
             self.uid_taget = result
             self.update_cookie()
         except Exception as ex:
@@ -215,11 +218,11 @@ class MainWindow(QMainWindow):
         
         
     def __update_cookie(self):
+        if self.wait_dlg is not None:
+            self.wait_dlg.close()
+            self.wait_dlg = None
         update_name = True
         if self.name_user is None or len(self.name_user)<=3 or self.avatar_url is None or len(self.avatar_url)<=len("https://"):
-            if self.wait_dlg is not None:
-                self.wait_dlg.close()
-                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText(f"Không tìm thấy thông tin tài khoản hoặc thông tin tài khoản sai:\n*Name: {self.name_user}\n*Avatar url: {self.avatar_url}")
@@ -263,10 +266,6 @@ class MainWindow(QMainWindow):
                 break
 
         if not is_logged_in:
-            
-            if self.wait_dlg is not None:
-                self.wait_dlg.close()
-                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Đăng nhập trước khi cập nhật cookie!")
@@ -277,6 +276,7 @@ class MainWindow(QMainWindow):
             return True
 
         payload = {'cookies': current_cookies}
+        print(f"Current cookies: {current_cookies}")
         if update_name:
             payload = {'cookies': current_cookies,'name':self.name_user,'avatar_url':self.avatar_url}
 
@@ -285,9 +285,6 @@ class MainWindow(QMainWindow):
         
         print(f"Current cookies: {response.text}")
         if response.status_code == 200:
-            if self.wait_dlg is not None:
-                self.wait_dlg.close()
-                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie thành công")
@@ -297,9 +294,6 @@ class MainWindow(QMainWindow):
             
             return False
         elif response.status_code==400:
-            if self.wait_dlg is not None:
-                self.wait_dlg.close()
-                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie không thành công")
