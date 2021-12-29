@@ -222,16 +222,20 @@ class MainWindow(QMainWindow):
             self.wait_dlg.close()
             self.wait_dlg = None
         update_name = True
-        if self.name_user is None or len(self.name_user)<=3 or self.avatar_url is None or len(self.avatar_url)<=len("https://"):
-            dlg = QMessageBox(self)
-            dlg.setWindowTitle("Thông báo")
-            dlg.setText(f"Không tìm thấy thông tin tài khoản hoặc thông tin tài khoản sai:\n*Name: {self.name_user}\n*Avatar url: {self.avatar_url}")
-            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-            dlg.setIcon(QMessageBox.Information)
-            dlg.exec()
-            update_name = False
+        
+        self.avatar_url = str(self.avatar_url)
+        self.name_user = str(self.name_user)
+        
+        # if self.name_user is None or len(self.name_user)<=3 or self.avatar_url is None or len(self.avatar_url)<=len("https://"):
+        #     dlg = QMessageBox(self)
+        #     dlg.setWindowTitle("Thông báo")
+        #     dlg.setText(f"Không tìm thấy thông tin tài khoản hoặc thông tin tài khoản sai:\n*Name: {self.name_user}\n*Avatar url: {self.avatar_url}")
+        #     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        #     dlg.setIcon(QMessageBox.Information)
+        #     dlg.exec()
+        #     update_name = False
             
-            return False
+        #     return False
             # return False
         # self.browser.setUrl(QUrl(f"https://www.facebook.com/{self.uid_taget}"))
         print(f'user name: {self.name_user}')
@@ -280,9 +284,7 @@ class MainWindow(QMainWindow):
         if update_name:
             payload = {'cookies': current_cookies,'name':self.name_user,'avatar_url':self.avatar_url}
 
-            
         response = requests.put(f"{BASE_URL}/update-my-fb-account-secret", json=payload, headers=headers)
-        
         print(f"Current cookies: {response.text}")
         if response.status_code == 200:
             dlg = QMessageBox(self)
@@ -303,9 +305,6 @@ class MainWindow(QMainWindow):
             dlg.exec()
             return False
         else:
-            if self.wait_dlg is not None:
-                self.wait_dlg.close()
-                self.wait_dlg = None
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
             dlg.setText("Cập nhật cookie không thành công")
@@ -313,7 +312,6 @@ class MainWindow(QMainWindow):
             dlg.setInformativeText(f"Error: {response.status_code} -- {response.text}")
             dlg.setIcon(QMessageBox.Information)
             dlg.exec()
-            
             return False
 
     def update_access_token(self):
