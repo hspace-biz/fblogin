@@ -279,7 +279,7 @@ class MainWindow(QMainWindow):
         if response.status_code == 200:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
-            dlg.setText(f"Cập nhật cookie thành công.\nName:{self.name_user}.\nAvatar:{self.avatar_url}.")
+            dlg.setText(f"Cập nhật cookie thành công.\nName:{self.name_user}.")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
             dlg.exec()
