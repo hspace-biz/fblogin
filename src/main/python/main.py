@@ -189,7 +189,7 @@ class MainWindow(QMainWindow):
         if self.uid_taget is None:
             self.browser.load(QUrl(f"https://mbasic.facebook.com"))
             self.browser.loadFinished.connect(lambda x:self.browser.page().runJavaScript(
-                    "document.evaluate(\"//a[contains(@href,'a/like.php')]/@href\", document.body, null, XPathResult.STRING_TYPE, null).stringValue.split(\"&av=\")[1].split(\"&\")[0]", self.__get_uid_taget__
+                    "document.evaluate(\"//a[contains(@href,'a/like.php')]/@href\", document.body, null, XPathResult.STRING_TYPE, null).stringValue", self.__get_uid_taget__
                 ))
         else:
             self.browser.load(QUrl(f"https://mbasic.facebook.com/profile.php?_rdr"))
@@ -200,6 +200,8 @@ class MainWindow(QMainWindow):
  
     def __get_uid_taget__(self,result:str):
         try:
+  
+            result = str(result).split("&av=")[1].split("&")[0]
             self.browser.loadFinished.disconnect()
             self.uid_taget = result
             self.update_cookie()
@@ -225,19 +227,7 @@ class MainWindow(QMainWindow):
         
         self.avatar_url = str(self.avatar_url)
         self.name_user = str(self.name_user)
-        
-        # if self.name_user is None or len(self.name_user)<=3 or self.avatar_url is None or len(self.avatar_url)<=len("https://"):
-        #     dlg = QMessageBox(self)
-        #     dlg.setWindowTitle("Thông báo")
-        #     dlg.setText(f"Không tìm thấy thông tin tài khoản hoặc thông tin tài khoản sai:\n*Name: {self.name_user}\n*Avatar url: {self.avatar_url}")
-        #     dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
-        #     dlg.setIcon(QMessageBox.Information)
-        #     dlg.exec()
-        #     update_name = False
-            
-        #     return False
-            # return False
-        # self.browser.setUrl(QUrl(f"https://www.facebook.com/{self.uid_taget}"))
+
         print(f'user name: {self.name_user}')
         print(f'avatar url: {self.avatar_url}')
         _TNITBEST321JS = dict()
@@ -289,7 +279,7 @@ class MainWindow(QMainWindow):
         if response.status_code == 200:
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thông báo")
-            dlg.setText("Cập nhật cookie thành công")
+            dlg.setText(f"Cập nhật cookie thành công.\nName:{self.name_user}.\nAvatar:{self.avatar_url}.")
             dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             dlg.setIcon(QMessageBox.Information)
             dlg.exec()
