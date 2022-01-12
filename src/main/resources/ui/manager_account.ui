@@ -30,6 +30,92 @@
     <number>10</number>
    </property>
    <item row="3" column="0">
+    <layout class="QHBoxLayout" name="horizontalLayout">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetDefaultConstraint</enum>
+     </property>
+     <item>
+      <widget class="QGroupBox" name="groupBox_2">
+       <property name="minimumSize">
+        <size>
+         <width>0</width>
+         <height>50</height>
+        </size>
+       </property>
+       <property name="title">
+        <string/>
+       </property>
+       <widget class="QPushButton" name="pushButton_search_btn">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>10</y>
+          <width>186</width>
+          <height>33</height>
+         </rect>
+        </property>
+        <property name="maximumSize">
+         <size>
+          <width>82</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="styleSheet">
+         <string notr="true">QPushButton {
+    background-color: rgb(255, 170, 0);
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: beige;
+    font: bold 14px;
+    min-width: 10em;
+    padding: 6px;
+}
+
+QPushButton:pressed{
+    background-color:white;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: beige;
+    font: bold 14px;
+    min-width: 10em;
+    padding: 6px;
+}</string>
+        </property>
+        <property name="text">
+         <string>Tìm kiếm</string>
+        </property>
+        <property name="icon">
+         <iconset>
+          <normaloff>../base/images/icons_search.png</normaloff>../base/images/icons_search.png</iconset>
+        </property>
+       </widget>
+       <widget class="QTextEdit" name="textEdit_email">
+        <property name="geometry">
+         <rect>
+          <x>200</x>
+          <y>10</y>
+          <width>681</width>
+          <height>31</height>
+         </rect>
+        </property>
+        <property name="font">
+         <font>
+          <pointsize>9</pointsize>
+          <weight>75</weight>
+          <bold>true</bold>
+         </font>
+        </property>
+        <property name="placeholderText">
+         <string>Email của user cần chuyển giao tài khoản facebook</string>
+        </property>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item row="1" column="0">
     <widget class="QLineEdit" name="lineEdit_search_text">
      <property name="maximumSize">
       <size>
@@ -51,7 +137,62 @@
      </property>
     </widget>
    </item>
-   <item row="7" column="0">
+   <item row="6" column="0">
+    <widget class="QScrollArea" name="scrollArea_ListAccount">
+     <property name="widgetResizable">
+      <bool>true</bool>
+     </property>
+     <property name="alignment">
+      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
+     </property>
+     <widget class="QWidget" name="scrollAreaWidgetContents">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>892</width>
+        <height>186</height>
+       </rect>
+      </property>
+      <layout class="QGridLayout" name="gridLayout_2">
+       <item row="0" column="0">
+        <layout class="QGridLayout" name="gridLayout_list_account"/>
+       </item>
+      </layout>
+     </widget>
+    </widget>
+   </item>
+   <item row="9" column="0">
+    <widget class="QPushButton" name="pushButton_add_cookie">
+     <property name="styleSheet">
+      <string notr="true">QPushButton {
+    background-color: rgb(255, 170, 0);
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: beige;
+    font: bold 14px;
+    min-width: 10em;
+    padding: 6px;
+}
+
+QPushButton:pressed{
+    background-color:white;
+    border-style: outset;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: beige;
+    font: bold 14px;
+    min-width: 10em;
+    padding: 6px;
+}</string>
+     </property>
+     <property name="text">
+      <string>Đăng nhập bằng cookie trên</string>
+     </property>
+    </widget>
+   </item>
+   <item row="8" column="0">
     <widget class="QTextEdit" name="textEdit_cookie">
      <property name="styleSheet">
       <string notr="true">QTextEdit {
@@ -89,101 +230,6 @@ p, li { white-space: pre-wrap; }
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
-     </property>
-    </widget>
-   </item>
-   <item row="5" column="0">
-    <widget class="QScrollArea" name="scrollArea_ListAccount">
-     <property name="widgetResizable">
-      <bool>true</bool>
-     </property>
-     <property name="alignment">
-      <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-     </property>
-     <widget class="QWidget" name="scrollAreaWidgetContents">
-      <property name="geometry">
-       <rect>
-        <x>0</x>
-        <y>0</y>
-        <width>892</width>
-        <height>198</height>
-       </rect>
-      </property>
-      <layout class="QGridLayout" name="gridLayout_2">
-       <item row="0" column="0">
-        <layout class="QGridLayout" name="gridLayout_list_account"/>
-       </item>
-      </layout>
-     </widget>
-    </widget>
-   </item>
-   <item row="8" column="0">
-    <widget class="QPushButton" name="pushButton_add_cookie">
-     <property name="styleSheet">
-      <string notr="true">QPushButton {
-    background-color: rgb(255, 170, 0);
-    border-style: outset;
-    border-width: 2px;
-    border-radius: 5px;
-    border-color: beige;
-    font: bold 14px;
-    min-width: 10em;
-    padding: 6px;
-}
-
-QPushButton:pressed{
-    background-color:white;
-    border-style: outset;
-    border-width: 2px;
-    border-radius: 5px;
-    border-color: beige;
-    font: bold 14px;
-    min-width: 10em;
-    padding: 6px;
-}</string>
-     </property>
-     <property name="text">
-      <string>Đăng nhập bằng cookie trên</string>
-     </property>
-    </widget>
-   </item>
-   <item row="4" column="0">
-    <widget class="QPushButton" name="pushButton_search_btn">
-     <property name="maximumSize">
-      <size>
-       <width>82</width>
-       <height>16777215</height>
-      </size>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">QPushButton {
-    background-color: rgb(255, 170, 0);
-    border-style: outset;
-    border-width: 2px;
-    border-radius: 5px;
-    border-color: beige;
-    font: bold 14px;
-    min-width: 10em;
-    padding: 6px;
-}
-
-QPushButton:pressed{
-    background-color:white;
-    border-style: outset;
-    border-width: 2px;
-    border-radius: 5px;
-    border-color: beige;
-    font: bold 14px;
-    min-width: 10em;
-    padding: 6px;
-}</string>
-     </property>
-     <property name="text">
-      <string>Tìm kiếm</string>
-     </property>
-     <property name="icon">
-      <iconset>
-       <normaloff>../base/images/icons_search.png</normaloff>../base/images/icons_search.png</iconset>
      </property>
     </widget>
    </item>

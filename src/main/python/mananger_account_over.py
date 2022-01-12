@@ -4,8 +4,8 @@ from settings import TNITBEST321JS, UID_TAGET
 from utils import ImportExportLoginInfo
 from manager_account import Ui_Mananger_Account
 import json
-from PyQt5.QtWidgets import QApplication, QMainWindow, QTableWidget, QTableWidgetItem, QDesktopWidget
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMessageBox, QTableWidget, QTableWidgetItem, QDesktopWidget, QWidget
+from PyQt5.QtCore import QSize, Qt
 import time
 import datetime
 
@@ -16,8 +16,11 @@ class Btn_facebook_action(QtWidgets.QPushButton):
     TYPE_UPDATE_COOLDOWN = 2
     TYPE_UPDATE_UNCOOLDOWN = 3
     TYPE_LOGIN = 4
+    TYPE_DELETE = 5
+    TYPE_COPY = 6
+    TYPE_MOVE = 7
 
-    def set_uid(self, uid: str, father, ctx) -> (None):
+    def set_uid(self, uid: str, father, ctx,row:int, sub_email_new:str=None,is_move:bool=False) -> (None):
         """Set uid for button login
         Args:
             uid (str): this is uid will login facebook when button clicked
@@ -27,6 +30,12 @@ class Btn_facebook_action(QtWidgets.QPushButton):
         self.uid = uid
         self.father = father
         self.ctx = ctx
+        self.sub_email_new=sub_email_new
+        if self.sub_email_new is None:
+            self.sub_email_new = "trash"
+        self.is_move = is_move
+        self.row = row
+        
 
     def set_next_windown(self, window: QMainWindow):
         self.window = window
@@ -45,6 +54,10 @@ class Btn_facebook_action(QtWidgets.QPushButton):
             self.update_cooldown(True)
         elif self.type_action == Btn_facebook_action.TYPE_UPDATE_UNCOOLDOWN:
             self.update_cooldown(False)
+        elif self.type_action == Btn_facebook_action.TYPE_DELETE:
+            self.delete_facebook()
+        elif self.type_action == Btn_facebook_action.TYPE_COPY:
+            self.copy_facebook()
 
     def update_disable(self, flag: bool):
         print(f"set disable: {flag}")
@@ -64,8 +77,89 @@ class Btn_facebook_action(QtWidgets.QPushButton):
         print(response.text)
 
     def update_cooldown(self, flag: bool):
-        print(f"set cooldown: {flag}")
-
+        print(f"set disable: {flag}")
+        _TNITBEST321JS = dict()
+        iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
+        _TNITBEST321JS = iei.import_()
+        headers = {
+            "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
+            "s-key": f"{_TNITBEST321JS.get('secret_key')}"
+        }
+        BASE_URL = _TNITBEST321JS.get("BASE_URL")
+        data_js = {"uid": self.uid, "is_cool_down": flag}
+        print(f"{BASE_URL}/update_account_by_uid")
+        response = requests.put(
+            f"{BASE_URL}/update_account_by_uid", headers=headers, json=data_js)
+        self.current_window.load_data()
+    
+    def delete_facebook(self):
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Thông báo")
+        dlg.setText(f"Bạn có muốn xóa tài khoản {self.uid} không?")
+        dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        dlg.setIcon(QMessageBox.Information)
+        bttn = dlg.exec()
+        if bttn == QMessageBox.Yes:
+            self.__move_facebook(sub_email="trash",is_move=True)
+        
+    def copy_facebook(self):
+        email = self.current_window.textEdit_email.toPlainText()
+        if len(email)<=5:
+            dlg = QMessageBox()
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText(f"Hảy điền email thụ hưởng.")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            bttn = dlg.exec()
+            return
+        
+        dlg = QMessageBox()
+        dlg.setWindowTitle("Thông báo")
+        dlg.setText(f"Bạn có muốn copy tài khoản {self.uid} cho {email} không?")
+        dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        dlg.setIcon(QMessageBox.Information)
+        bttn = dlg.exec()
+        if bttn == QMessageBox.Yes:
+            self.__move_facebook(is_move=False,sub_email=email)
+        
+    def move_facebook(self):
+        self.__move_facebook(is_move=True)
+        
+    def __move_facebook(self,sub_email:str = None,is_move:bool = None):
+        _TNITBEST321JS = dict()
+        iei = ImportExportLoginInfo(self.ctx.get_resource(TNITBEST321JS))
+        _TNITBEST321JS = iei.import_()
+        headers = {
+            "Authorization": f"{_TNITBEST321JS.get('token').get('token_type')} {_TNITBEST321JS.get('token').get('access_token')}",
+            "s-key": f"{_TNITBEST321JS.get('secret_key')}"
+        }
+        BASE_URL = _TNITBEST321JS.get("BASE_URL")
+        
+        if sub_email is None:
+            sub_email = self.sub_email_new
+        if is_move is None:
+            is_move = self.is_move
+            
+        data_js = {"pid": self.uid, "sub_email": sub_email,"move":is_move}
+        print(f"{BASE_URL}/copy_facebook_account")
+        response = requests.put(
+            f"{BASE_URL}/copy_facebook_account", headers=headers, json=data_js)
+        if response.status_code==200:
+            dlg = QMessageBox()
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText(f"Thực hiện tác vụ thành công\n{response.json().get('msg')}.")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            bttn = dlg.exec() 
+        else:
+            dlg = QMessageBox()
+            dlg.setWindowTitle("Thông báo")
+            dlg.setText(f"Thực hiện tác vụ thất bị.\n{response.text}.")
+            dlg.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            dlg.setIcon(QMessageBox.Information)
+            bttn = dlg.exec() 
+        self.current_window.load_data()
+    
     def login(self):
         """Login to facebook with uid set in set_uid function"""
         self.window.show()
@@ -74,6 +168,12 @@ class Btn_facebook_action(QtWidgets.QPushButton):
 
     def set_type(self, _type: int):
         self.type_action = _type
+        
+    def delete(self):
+        """Move this account to trash
+        """
+        pass
+    
 
 
 class Mananger_account(Ui_Mananger_Account):
@@ -87,7 +187,7 @@ class Mananger_account(Ui_Mananger_Account):
         self.pushButton_add_cookie.clicked.connect(self.login_with_cookie)
         self.pushButton_search_btn.clicked.connect(self.search_btn_click)
         self.lineEdit_search_text.textChanged.connect(self.search_text_change)
-
+        
     def login_with_cookie(self):
         cookies_raw = self.textEdit_cookie.toPlainText().split(";")
         cookies = []
@@ -107,7 +207,7 @@ class Mananger_account(Ui_Mananger_Account):
         self.window.login_with_cookie_input(cookies=cookies)
         self.window.show()
         self.Form.close()
-
+        
     def load_data(self):
 
         _TNITBEST321JS = dict()
@@ -144,7 +244,11 @@ class Mananger_account(Ui_Mananger_Account):
 
             self.login_map = {}
             self.gridLayout_list_account.setAlignment(Qt.AlignTop)
-
+            icon_cp = QtGui.QIcon()
+            icon_cp.addFile("src\main\icons\copy.png",size=QSize(30,30))
+            
+            icon_delete = QtGui.QIcon()
+            icon_delete.addFile("src\main\icons\delete.png",size=QSize(30,30))
             for row, data in enumerate(data):
                 col = 0
                 action_facebook_button = Btn_facebook_action()
@@ -157,7 +261,7 @@ class Mananger_account(Ui_Mananger_Account):
                         uid = cookie.get("value")
                         break
                 action_facebook_button.set_uid(
-                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx)
+                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx,row=row)
                 action_facebook_button.set_current_window(self)
                 action_facebook_button.set_type(
                     _type=Btn_facebook_action.TYPE_LOGIN)
@@ -166,6 +270,35 @@ class Mananger_account(Ui_Mananger_Account):
                 action_facebook_button.set_next_windown(window=self.window)
                 action_facebook_button.setText(f"Login to :{uid}")
 
+                col += 1
+                action_facebook_button = Btn_facebook_action()
+                action_facebook_button.set_uid(
+                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx,row=row)
+                action_facebook_button.setFixedWidth(30)
+                
+                action_facebook_button.setIcon(icon_delete)
+                self.gridLayout_list_account.addWidget(
+                    action_facebook_button, row, col, Qt.AlignLeft)
+                action_facebook_button.set_type(Btn_facebook_action.TYPE_DELETE)
+                action_facebook_button.set_current_window(self)
+                action_facebook_button.clicked.connect(
+                    action_facebook_button.action)
+
+                col += 1
+                action_facebook_button = Btn_facebook_action()
+                action_facebook_button.set_uid(
+                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx,row=row)
+                action_facebook_button.setFixedWidth(30)
+                
+                action_facebook_button.setIcon(icon_cp)
+                self.gridLayout_list_account.addWidget(
+                    action_facebook_button, row, col, Qt.AlignLeft)
+                action_facebook_button.set_type(Btn_facebook_action.TYPE_COPY)
+                action_facebook_button.set_current_window(self)
+                action_facebook_button.clicked.connect(
+                    action_facebook_button.action)
+                
+                
                 col += 1
                 lable = QtWidgets.QLabel()
                 lable.setFixedWidth(180)
@@ -179,7 +312,7 @@ class Mananger_account(Ui_Mananger_Account):
                 self.gridLayout_list_account.addWidget(
                     action_facebook_button, row, col, Qt.AlignLeft)
                 action_facebook_button.set_uid(
-                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx)
+                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx,row=row)
                 action_facebook_button.set_current_window(self)
                 action_facebook_button.clicked.connect(
                     action_facebook_button.action)
@@ -194,13 +327,23 @@ class Mananger_account(Ui_Mananger_Account):
                     action_facebook_button.setText(f"Enable")
                     self.set_color_button(action_facebook_button, 255, 0, 0)
 
+
+                col += 1
+                list_email = QtWidgets.QComboBox()
+                list_email.setFixedWidth(300)
+                for email in data.get("email"):
+                    list_email.addItem(email)
+                self.gridLayout_list_account.addWidget(
+                    list_email, row, col, Qt.AlignLeft)
+                
+                
                 col += 1
                 action_facebook_button = Btn_facebook_action()
                 action_facebook_button.setFixedWidth(100)
                 self.gridLayout_list_account.addWidget(
                     action_facebook_button, row, col, Qt.AlignLeft)
                 action_facebook_button.set_uid(
-                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx)
+                    uid=str(cookie.get('value')), father=self.Form, ctx=self.ctx,row=row)
                 action_facebook_button.set_current_window(self)
                 action_facebook_button.clicked.connect(
                     action_facebook_button.action)
