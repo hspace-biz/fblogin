@@ -245,10 +245,10 @@ class Mananger_account(Ui_Mananger_Account):
             self.login_map = {}
             self.gridLayout_list_account.setAlignment(Qt.AlignTop)
             icon_cp = QtGui.QIcon()
-            icon_cp.addFile("src\main\icons\copy.png",size=QSize(30,30))
+            icon_cp.addFile(self.ctx.get_resource("images/copy.png"),size=QSize(30,30))
             
             icon_delete = QtGui.QIcon()
-            icon_delete.addFile("src\main\icons\delete.png",size=QSize(30,30))
+            icon_delete.addFile(self.ctx.get_resource("images/delete.png"),size=QSize(30,30))
             for row, data in enumerate(data):
                 col = 0
                 action_facebook_button = Btn_facebook_action()
