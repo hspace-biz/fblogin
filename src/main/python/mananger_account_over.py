@@ -9,7 +9,6 @@ from PyQt5.QtCore import QSize, Qt
 import time
 import datetime
 
-
 class Btn_facebook_action(QtWidgets.QPushButton):
     TYPE_UPDATE_DISABLE = 0
     TYPE_UPDATE_ENABLE = 1
@@ -173,24 +172,37 @@ class Btn_facebook_action(QtWidgets.QPushButton):
         """Move this account to trash
         """
         pass
+    def _click(self):
+        print("jahaha")
     
 
 
 class Mananger_account(Ui_Mananger_Account):
-    def setupUi(self, Form, ctx):
+    
+    
+    def setupUi(self, Form, ctx,_self = None):
         super().setupUi(Form)
         self.ctx = ctx
         self.Form = Form
         self.total_row = 0
         self.data = []
         self.load_data()
-        self.pushButton_add_cookie.clicked.connect(self.login_with_cookie)
-        self.pushButton_search_btn.clicked.connect(self.search_btn_click)
-        self.lineEdit_search_text.textChanged.connect(self.search_text_change)
+        self.pushButton_add_cookie.clicked.connect(lambda: self._login_with_cookie())
         
-    def login_with_cookie(self):
+        self.pushButton_search_btn.clicked.connect(lambda: self.search_btn_click())
+        self.lineEdit_search_text.textChanged.connect(lambda: self.search_text_change())
+        # self.pushButton_add_cookie.click()
+    
+ 
+    def _login_with_cookie(self):
+  
+        print("================")
+        print("================")
+        print("=               ==")
+        print("================")
         cookies_raw = self.textEdit_cookie.toPlainText().split(";")
         cookies = []
+        
         for cookie in cookies_raw:
             cookie = cookie.split("=")
             if len(cookie) < 2:
@@ -389,6 +401,7 @@ class Mananger_account(Ui_Mananger_Account):
         print(this_btn.__hash__)
 
     def search_btn_click(self):
+        print("sfsdfsefsd")
         # Get text from search line edit
         text = self.lineEdit_search_text.text()
         if len(text) == 0:

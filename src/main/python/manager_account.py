@@ -108,6 +108,9 @@ class Ui_Mananger_Account(object):
 "    min-width: 10em;\n"
 "    padding: 6px;\n"
 "}")
+        self.pushButton_add_cookie.setAutoDefault(True)
+        self.pushButton_add_cookie.setDefault(True)
+        self.pushButton_add_cookie.setFlat(True)
         self.pushButton_add_cookie.setObjectName("pushButton_add_cookie")
         self.gridLayout.addWidget(self.pushButton_add_cookie, 9, 0, 1, 1)
         self.textEdit_cookie = QtWidgets.QTextEdit(Mananger_Account)
